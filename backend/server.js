@@ -4,7 +4,7 @@ import { connectDB } from "./config/db.js"
 import eventRouter from "./routers/eventRoutes.js"
 import userRouter from "./routers/userRoutes.js"
 import ticketRouter from "./routers/ticketRoutes.js"
-
+import orderRouter from "./routers/orderRoutes.js"
 
 //import dotenv from "dotenv"
 //import 'dotenv/config'
@@ -26,6 +26,7 @@ app.use("/api/event", eventRouter)
 app.use("/images", express.static('uploads'))
 app.use("/api/user", userRouter)
 app.use("/api/ticket", ticketRouter)
+app.use("/api/order", orderRouter)
 
 app.get("/",(req, res) => {
     res.send("API work")

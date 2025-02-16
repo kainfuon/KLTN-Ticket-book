@@ -5,7 +5,18 @@ import eventModel from "../models/eventModel.js";
 // Place a new order
 const placeOrder = async (req, res) => {
     try {
-        const { userId, eventId, tickets, fullName, email, phone } = req.body;
+        const { eventId, tickets, fullName, email, phone } = req.body;
+        if (!eventId || !tickets.length || !fullName || !email || !phone) {
+            return res.status(400).json({ success: false, message: "Missing required fields" });
+        }
+        //console.log("User from token:", req.user);
+        // Lấy userId từ token
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized. User ID is missing." });
+        }
+        
+
 
         // Check if event exists
         const event = await eventModel.findById(eventId);
@@ -49,11 +60,20 @@ const placeOrder = async (req, res) => {
     }
 };
 
-// Get orders for a user
+
+// Get orders for the authenticated user
 const getUserOrders = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const orders = await orderModel.find({ userId }).populate("eventId").populate("tickets.ticketId");
+        const userId = req.user.userId; // Lấy userId từ auth middleware
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized. User ID is missing." });
+        }
+
+        const orders = await orderModel
+            .find({ userId })
+            .populate("eventId")
+            .populate("tickets.ticketId");
 
         res.json({ success: true, data: orders });
     } catch (error) {
@@ -61,6 +81,7 @@ const getUserOrders = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error." });
     }
 };
+
 
 // Get order details
 const getOrderDetail = async (req, res) => {
@@ -81,7 +102,7 @@ const getOrderDetail = async (req, res) => {
 
 const getUserTickets = async (req, res) => {
     try {
-        const userId = req.user.id; // Lấy userId từ token đã xác thực
+        const userId = req.user?.userId; // Lấy userId từ token đã xác thực
 
         // Tìm tất cả các đơn hàng của user
         const orders = await orderModel.find({ userId });
