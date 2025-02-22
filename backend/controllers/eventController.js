@@ -3,8 +3,6 @@ import fs from 'fs'
 import path from "path";
 
 // add event
-
-// add event
 const addEvent = async (req, res) => {
     try {
         if (!req.file) {

@@ -45,7 +45,7 @@ const loginUser = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.json({ success: false, message: "Invalid email or password" });
 
-        // Generate token
+        // Generate token // userId chính là _id của MongoDB
         const token = jwt.sign({ userId: user._id, role: user.role }, "your_secret_key", { expiresIn: "1h" });
 
         res.json({ success: true, token, role: user.role });

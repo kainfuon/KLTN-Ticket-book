@@ -15,8 +15,6 @@ const placeOrder = async (req, res) => {
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized. User ID is missing." });
         }
-        
-
 
         // Check if event exists
         const event = await eventModel.findById(eventId);
@@ -54,6 +52,29 @@ const placeOrder = async (req, res) => {
         await newOrder.save();
 
         res.json({ success: true, message: "Order placed successfully!", data: newOrder });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
+};
+
+const confirmPayment = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        const order = await orderModel.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found." });
+        }
+
+        if (order.status === "paid") {
+            return res.json({ success: true, message: "Order already paid.", data: order });
+        }
+
+        order.status = "paid";
+        await order.save();
+
+        res.json({ success: true, message: "Payment successful!", data: order });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Server error." });
@@ -134,5 +155,4 @@ const getUserTickets = async (req, res) => {
     }
 };
 
-
-export { placeOrder, getUserOrders, getOrderDetail, getUserTickets };
+export { placeOrder, confirmPayment, getUserOrders, getOrderDetail, getUserTickets };
