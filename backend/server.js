@@ -5,6 +5,7 @@ import eventRouter from "./routers/eventRoutes.js"
 import userRouter from "./routers/userRoutes.js"
 import ticketRouter from "./routers/ticketRoutes.js"
 import orderRouter from "./routers/orderRoutes.js"
+import userTicketRouter from "./routers/userTicketRouters.js"
 
 //import dotenv from "dotenv"
 //import 'dotenv/config'
@@ -27,6 +28,7 @@ app.use("/images", express.static('uploads'))
 app.use("/api/user", userRouter)
 app.use("/api/ticket", ticketRouter)
 app.use("/api/order", orderRouter)
+app.use("/api/userTicket", userTicketRouter)
 
 app.get("/",(req, res) => {
     res.send("API work")

@@ -149,4 +149,4 @@ const getTicketQR = async (req, res) => {
     }
 };
 
-export { addTicket, getTicketsByEvent, getTicketById, updateTicket, deleteTicket, getTicketQR };
+export { addTicket, getTicketsByEvent, updateTicket, deleteTicket };

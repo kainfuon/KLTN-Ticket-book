@@ -14,6 +14,6 @@ const ticketSchema = new mongoose.Schema(
     { timestamps: true } // Auto add createdAt & updatedAt
 );
 
-const ticketModel = mongoose.model.event || mongoose.model("ticket", ticketSchema)
+const ticketModel = mongoose.models.ticket || mongoose.model("ticket", ticketSchema)
 
 export default ticketModel;

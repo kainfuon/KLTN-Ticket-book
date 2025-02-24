@@ -1,4 +1,5 @@
 import mongoose  from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -7,6 +8,11 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ["user", "admin"], default: "user" },
 }, { timestamps: true });
 
-const userModel = mongoose.model.user || mongoose.model("user", userSchema);
+// check password
+userSchema.methods.comparePassword = async function (inputPassword) {
+    return bcrypt.compare(inputPassword, this.password);
+};
+
+const userModel = mongoose.models.user || mongoose.model("user", userSchema);
 
 export default userModel;
