@@ -9,7 +9,7 @@ const addEvent = async (req, res) => {
             return res.status(400).json({ success: false, message: "No image uploaded." });
         }
 
-        const { title, description, eventDate, venue, status } = req.body;
+        const { title, description, eventDate, saleStartDate, venue, status } = req.body;
         const tempImagePath = req.file.path; // Ảnh đang nằm trong temp_uploads/
         const finalImagePath = path.join("uploads", req.file.filename); // Đích đến
 
@@ -18,6 +18,7 @@ const addEvent = async (req, res) => {
             title,
             description,
             eventDate,
+            saleStartDate,
             venue,
             status: status || "ongoing",
             image: req.file.filename // Chỉ lưu tên file vào database
@@ -92,7 +93,7 @@ const removeEvent = async (req, res) => {
 const updateEvent = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const { title, description, eventDate, venue, status } = req.body;
+        const { title, description, eventDate, venue, saleStartDate, status } = req.body;
         const imageFile = req.file; // Ảnh mới (nếu có)
 
         console.log("Received Event ID:", eventId); // Debugging
@@ -123,6 +124,7 @@ const updateEvent = async (req, res) => {
         event.title = title || event.title;
         event.description = description || event.description;
         event.eventDate = eventDate || event.eventDate;
+        event.saleStartDate = saleStartDate || event.saleStartDate;
         event.venue = venue || event.venue;
         event.status = status || event.status;
 
