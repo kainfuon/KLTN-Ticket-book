@@ -5,15 +5,17 @@ export const handleLogin = async (email, password, setError, navigate) => {
 
     if (response.success) {
         localStorage.setItem("token", response.token);
-        localStorage.setItem("role", response.role); // Lưu role để bảo vệ route
+        localStorage.setItem("role", response.role);
+        localStorage.setItem("user", JSON.stringify(response.user)); // 🛠 Lưu thông tin user
 
         // Điều hướng dựa trên role
         if (response.role === "admin") {
             navigate("/admin");
         } else {
-            navigate("/user"); // Điều hướng đúng trang user
+            navigate("/home");
         }
     } else {
         setError(response.message);
     }
 };
+
