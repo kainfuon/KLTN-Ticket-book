@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -110,21 +110,6 @@ const SignupPage = () => {
                 />
                 </div>
 
-                {/* <div>
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Confirm Password
-                </label>
-                <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    required
-                    className="w-full p-2.5 border rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-                </div> */}
-
                 <button
                 type="submit"
                 disabled={loading}
@@ -135,9 +120,9 @@ const SignupPage = () => {
 
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                 Already have an account?{" "}
-                <a href="/login" className="text-primary-600 hover:underline text-white">
+                <Link to="/login" className="text-primary-600 hover:underline text-white">
                     Sign in
-                </a>
+                </Link>
                 </p>
             </form>
             </div>
