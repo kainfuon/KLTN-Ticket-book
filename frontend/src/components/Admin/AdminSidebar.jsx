@@ -1,48 +1,60 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  PresentationChartBarIcon,
-  TicketIcon,
-  UserCircleIcon,
-  Cog6ToothIcon,
-  PowerIcon,
-} from "@heroicons/react/24/solid";
+import { FaTachometerAlt, FaCalendarAlt, FaTicketAlt, FaUsers, FaBox, FaCog, FaSignOutAlt } from "react-icons/fa";
 
 const AdminSidebar = () => {
   return (
-    <div className="h-screen text-black w-64 p-6 shadow-md text-center transition-all">
-      <h2 className="text-2xl font-bold mb-4">Ticket Book</h2>
-      <ul className="space-y-3">
-        <li>
-          <Link to="/admin/dashboard" className="flex items-center gap-3 text-xl py-2 px-4 rounded-lg hover:bg-gray-300">
-            <PresentationChartBarIcon className="h-6 w-6" />
-            Dashboard
-          </Link>
-        </li>
-        <li>
-          <Link to="/admin/tickets" className="flex items-center gap-3 text-xl py-2 px-4 rounded-lg hover:bg-gray-300">
-            <TicketIcon className="h-6 w-6" />
-            Tickets
-          </Link>
-        </li>
-        <li>
-          <Link to="/admin/users" className="flex items-center gap-3 text-xl py-2 px-4 rounded-lg hover:bg-gray-300">
-            <UserCircleIcon className="h-6 w-6" />
-            Users
-          </Link>
-        </li>
-        <li>
-          <Link to="/admin/settings" className="flex items-center gap-3 text-xl py-2 px-4 rounded-lg hover:bg-gray-300">
-            <Cog6ToothIcon className="h-6 w-6" />
-            Settings
-          </Link>
-        </li>
-        <li>
-          <button className="flex items-center gap-3 text-lg py-2 px-4 rounded-xl text-red-500 hover:bg-red-100">
-            <PowerIcon className="h-6 w-6" />
-            Logout
-          </button>
-        </li>
+    <div className="bg-gray-100 text-gray-900 h-screen px-4 fixed w-16 md:w-64 border-r border-gray-300">
+      <h1 className="text-2xl font-bold hidden md:block mt-4 text-center italic">Ticket Book</h1>
+      <ul className="flex flex-col mt-5 text-xl">
+        <Link to="/admin/dashboard" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaTachometerAlt className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Dashboard</span>
+        </Link>
+
+        <Link to="/admin/events" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaCalendarAlt className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Events</span>
+        </Link>
+
+        <Link to="/admin/tickets" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaTicketAlt className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Tickets</span>
+        </Link>
+
+        <Link to="/admin/customers" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaUsers className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Customers</span>
+        </Link>
+
+        <Link to="/admin/orders" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaBox className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Orders</span>
+        </Link>
+
+        <Link to="/admin/settings" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaCog className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Settings</span>
+        </Link>
+
+        <Link to="/login" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaSignOutAlt className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Logout</span>
+        </Link>
       </ul>
     </div>
   );
