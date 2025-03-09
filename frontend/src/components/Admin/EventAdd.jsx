@@ -64,7 +64,7 @@ const EventAdd = () => {
                     className="flex items-center text-blue-600 hover:text-blue-800 mb-6 text-lg cursor-pointer"
                 >
                     <FaArrowLeft className="mr-2" />
-                    Back to List Events
+                    Back to Events
                 </button>
 
                 <h2 className="text-3xl font-semibold mb-6">Add New Event</h2>
