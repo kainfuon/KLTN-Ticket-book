@@ -1,14 +1,19 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/api/event"; // Updated base URL
+const API_URL = "http://localhost:4001/api/event"; // Updated base URL
 
 // Fetch all events
 export const getAllEvents = async () => {
     try {
-        const response = await axios.get(`${API_URL}/list`); // Corrected API endpoint
-        return response.data.data; // Extract "data" from response
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/list`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data.data; // Access the nested data array
     } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error('Error fetching events:', error);
         return [];
     }
 };
@@ -16,11 +21,16 @@ export const getAllEvents = async () => {
 // Fetch event details by ID
 export const getEventById = async (eventId) => {
     try {
-        const response = await axios.get(`${API_URL}/${eventId}`);
-        return response.data.data;
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/${eventId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data;
     } catch (error) {
-        console.error(`Error fetching event ${eventId}:`, error);
-        return null;
+        console.error('Error fetching event:', error);
+        throw error;
     }
 };
 

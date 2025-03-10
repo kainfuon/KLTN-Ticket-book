@@ -57,16 +57,19 @@ const EventAdd = () => {
     };
 
     return (
-        <div className="p-6">
-            <div className="bg-white rounded-lg shadow-md max-w-4xl mx-auto p-6">
-                <button 
-                    onClick={() => navigate('/admin/events')}
-                    className="flex items-center text-blue-600 hover:text-blue-800 mb-6 text-lg cursor-pointer"
-                >
-                    <FaArrowLeft className="mr-2" />
-                    Back to Events
-                </button>
+        <div className="p-6 ">
+            {/* Header Section */}
+                <div className="flex items-center justify-between mb-6">
+                        <button
+                            onClick={() => navigate('/admin/events')}
+                            className="flex items-center text-blue-600 hover:text-blue-800 text-lg cursor-pointer"
+                        >
+                            <FaArrowLeft className="mr-2" />
+                            Back to Events
+                        </button>
+                </div>
 
+            <div className="bg-white rounded-lg shadow-md max-w-4xl mx-auto p-6">
                 <h2 className="text-3xl font-semibold mb-6">Add New Event</h2>
 
                 {error && (
@@ -155,7 +158,7 @@ const EventAdd = () => {
                             name="status"
                             value={formData.status}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                         >
                             <option value="ongoing">Ongoing</option>
                             <option value="completed">Completed</option>
@@ -166,7 +169,7 @@ const EventAdd = () => {
                         <label className="block text-lg font-medium text-gray-700 mb-2">
                             Event Image
                         </label>
-                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500">
                             <div className="space-y-1 text-center">
                                 {preview ? (
                                     <div className="mb-4">

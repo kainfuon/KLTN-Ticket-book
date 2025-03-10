@@ -13,7 +13,7 @@ import statsRouter from "./routers/statsRouter.js"
 
 // app config
 const app = express()
-const port = 4000
+const port = 4001
 
 //middleware
 app.use(express.json())
