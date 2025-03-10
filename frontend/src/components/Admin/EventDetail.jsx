@@ -4,6 +4,7 @@ import { getEventById } from '../../services/eventService';
 import { createTicket, getTicketsByEvent } from '../../services/ticketService';
 import { FaArrowLeft, FaPlus } from 'react-icons/fa';
 import TicketAdd from './TicketAdd';
+import TicketChart from '../../assets/TicketChart';
 
 const EventDetail = () => {
 
@@ -168,6 +169,12 @@ const EventDetail = () => {
             </div>
         )}
 
+
+         {/* Add the chart before or after your tickets table */}
+        <div className="mb-6">
+                <TicketChart tickets={tickets} />
+        </div>
+
         {/* Tickets Section */}
         <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
@@ -180,6 +187,8 @@ const EventDetail = () => {
                         Add New Ticket
                     </button>
             </div>
+
+           
 
             {/* Tickets Table */}
             <div className="overflow-x-auto">
