@@ -30,7 +30,7 @@ const EventList = () => {
     }
 
     return (
-      <div className="grow p-8">
+      <div className="grow p-8 relative">
           {/* Header Section - Increased size */}
           <div className="flex justify-between items-center mb-6">
               <div>
@@ -47,7 +47,8 @@ const EventList = () => {
           </div>
   
           {events.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-md">
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 className="text-xl font-bold mb-6">Event List</h3>
                   <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
@@ -110,7 +111,7 @@ const EventList = () => {
                                       <td className="px-6 py-4 whitespace-nowrap text-base font-medium"> {/* Increased text size */}
                                       <button
                                           onClick={() => navigate(`/admin/events/${event._id}`)}
-                                          className="text-blue-600 hover:text-blue-900 mr-6 text-base"  // Fixed the syntax
+                                          className="text-blue-600 hover:text-blue-900 mr-6 text-base cursor-pointer"  // Fixed the syntax
                                       >
                                           View Details
                                       </button>
