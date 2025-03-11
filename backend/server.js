@@ -17,7 +17,12 @@ const port = 4001
 
 //middleware
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:5173", // Đúng domain frontend
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Content-Type,Authorization",
+    credentials: true
+}));
 
 
 // db connect

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllEvents } from "../../services/eventService";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaCalendarAlt } from "react-icons/fa";
+import { FaMapMarkerAlt , FaCalendarAlt } from "react-icons/fa";
 
 const EventDisplay = () => {
     const [events, setEvents] = useState([]);
@@ -70,26 +70,37 @@ const EventDisplay = () => {
                                 </div>
 
                                 {/* Event Details */}
-                                <div className="space-y-2 mb-4">
-                                    <p className="text-gray-600 line-clamp-2">{event.description}</p>
-                                    <div className="flex items-center text-gray-500">
-                                        <FaCalendarAlt className="mr-2" />
-                                        <span>{new Date(event.eventDate).toLocaleDateString('vi-VN')}</span>
-                                    </div>
+                                <div className="flex justify-between items-end mt-2">
+                                    {/* Event Date & Venue (căn trái) */}
                                     <div className="text-gray-500">
-                                        <span className="font-medium">Venue:</span> {event.venue}
-                                    </div>
-                                </div>
+                                        <div className="flex items-center gap-2">
+                                            <FaCalendarAlt className="mr-1" />
+                                            <span>
+                                                {new Date(event.eventDate).toLocaleString('vi-VN', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour12: false, // Đảm bảo hiển thị 24h thay vì AM/PM
+                                                })}
+                                            </span>
 
-                                {/* Action Buttons */}
-                                <div className="flex justify-end gap-2">
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <FaMapMarkerAlt  className="mr-1" /> {event.venue}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Button (căn phải, nằm dưới) */}
                                     <button
-                                        onClick={() => navigate(`/admin/events/${event._id}`)}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer"
+                                        onClick={() => navigate(`/events/${event._id}`)}
+                                        className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200 cursor-pointer"
                                     >
                                         View Details
                                     </button>
                                 </div>
+
                             </div>
                         </div>
                     ))}
