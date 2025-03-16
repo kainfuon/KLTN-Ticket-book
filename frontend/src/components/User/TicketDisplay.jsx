@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserTickets } from '../../services/userticketService';
 import { format } from 'date-fns';
-import { FaCalendar, FaMapMarkerAlt, FaTicketAlt } from 'react-icons/fa';
+import { FaCalendar, FaMapMarkerAlt, FaTicketAlt, FaEye, FaExchangeAlt } from 'react-icons/fa';
+import TicketDetailModal from './TicketDetailModal';
+import TradeTicketModal from './TradeTicketModal';
 
 const TicketDisplay = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showTradeModal, setShowTradeModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,11 +23,11 @@ const TicketDisplay = () => {
     try {
       setLoading(true);
       const response = await getUserTickets();
+      // Assuming the response data is populated with eventId and ticketType references
       setTickets(response.data || []);
     } catch (err) {
       console.error('Error fetching tickets:', err);
       if (err.message === 'Please login again') {
-        // Redirect to login page if token is invalid
         navigate('/login', { 
           state: { 
             from: '/user/tickets',
@@ -101,7 +106,6 @@ const TicketDisplay = () => {
 
           {/* Ticket Details */}
           <div className="p-4 space-y-3">
-            {/* Time and Venue */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center text-gray-600">
                 <FaCalendar className="mr-2" />
@@ -122,9 +126,59 @@ const TicketDisplay = () => {
                 {ticket.ticketType.price.toLocaleString()}đ
               </span>
             </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3 pt-2">
+              <button
+                onClick={() => {
+                  setSelectedTicket(ticket);
+                  setShowDetailModal(true);
+                }}
+                className="flex items-center text-blue-600 hover:text-blue-800"
+              >
+                <FaEye className="mr-1" />
+                View Details
+              </button>
+              {!ticket.isTraded && (
+                <button
+                  onClick={() => {
+                    setSelectedTicket(ticket);
+                    setShowTradeModal(true);
+                  }}
+                  className="flex items-center text-green-600 hover:text-green-800"
+                >
+                  <FaExchangeAlt className="mr-1" />
+                  Trade
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ))}
+
+      {/* Modals */}
+      {showDetailModal && selectedTicket && (
+        <TicketDetailModal
+          ticket={selectedTicket}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedTicket(null);
+          }}
+        />
+      )}
+
+      {showTradeModal && selectedTicket && (
+        <TradeTicketModal
+          ticket={selectedTicket}
+          onClose={() => {
+            setShowTradeModal(false);
+            setSelectedTicket(null);
+          }}
+          onTradeComplete={() => {
+            fetchUserTickets();
+          }}
+        />
+      )}
     </div>
   );
 };

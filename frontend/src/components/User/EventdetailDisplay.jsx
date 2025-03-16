@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaMinus, FaPlus, FaRegCalendar, FaMapMarkerAlt  } from 'react-icons/fa';
 import { getEventById } from '../../services/eventService';
 import { getTicketsByEvent } from '../../services/ticketService';
-import { createOrder } from '../../services/orderService';
+import OrderModal from './OrderModal';
 
 const EventdetailDisplay = () => {
   const { id } = useParams();
@@ -13,6 +13,7 @@ const EventdetailDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTickets, setSelectedTickets] = useState({});
+  const [showOrderModal, setShowOrderModal] = useState(false);
 
   useEffect(() => {
     fetchEventData();
@@ -41,10 +42,12 @@ const EventdetailDisplay = () => {
   };
 
   const handleQuantityChange = (ticketId, change) => {
-    setSelectedTickets(prev => ({
-      ...prev,
-      [ticketId]: Math.max(0, (prev[ticketId] || 0) + change)
-    }));
+    if (!showOrderModal) { // Only allow changes when modal is not shown
+      setSelectedTickets(prev => ({
+        ...prev,
+        [ticketId]: Math.max(0, (prev[ticketId] || 0) + change)
+      }));
+    }
   };
 
   const calculateTotal = () => {
@@ -53,24 +56,8 @@ const EventdetailDisplay = () => {
     }, 0);
   };
 
-  const handleBooking = async () => {
-    try {
-      const orderData = {
-        eventId: id,
-        tickets: Object.entries(selectedTickets).map(([ticketId, quantity]) => ({
-          ticketId,
-          quantity
-        }))
-      };
-      
-      await createOrder(orderData);
-      navigate('/user/tickets', { 
-        state: { success: true, message: 'Booking successful!' }
-      });
-    } catch (err) {
-      console.error('Booking error:', err);
-      setError('Failed to create booking');
-    }
+  const handleContinue = () => {
+    setShowOrderModal(true);
   };
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -142,46 +129,56 @@ const EventdetailDisplay = () => {
         </div>
 
         {/* Ticket Booking Section */}
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Hạng vé</h3>
-          <div className="space-y-4">
-            {tickets.map((ticket) => (
-              <div key={ticket._id} 
+      <div className="bg-gray-50 rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4">Hạng vé</h3>
+        <div className="space-y-4">
+          {tickets.map((ticket) => (
+            (showOrderModal && !selectedTickets[ticket._id]) ? null : (
+              <div
+                key={ticket._id}
                 className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm"
               >
                 <div>
                   <h4 className="font-medium">{ticket.type}</h4>
                   <p className="text-gray-600">{ticket.price.toLocaleString()}$</p>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => handleQuantityChange(ticket._id, -1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                    disabled={!selectedTickets[ticket._id]}
-                  >
-                    <FaMinus className="text-gray-600" />
-                  </button>
-                  <span className="w-8 text-center">
-                    {selectedTickets[ticket._id] || 0}
-                  </span>
-                  <button
-                    onClick={() => handleQuantityChange(ticket._id, 1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                  >
-                    <FaPlus className="text-gray-600" />
-                  </button>
-                </div>
+                {!showOrderModal && (
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => handleQuantityChange(ticket._id, -1)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
+                      disabled={!selectedTickets[ticket._id]}
+                    >
+                      <FaMinus className="text-gray-600" />
+                    </button>
+                    <span className="w-8 text-center">
+                      {selectedTickets[ticket._id] || 0}
+                    </span>
+                    <button
+                      onClick={() => handleQuantityChange(ticket._id, 1)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
+                    >
+                      <FaPlus className="text-gray-600" />
+                    </button>
+                  </div>
+                )}
+                {showOrderModal && (
+                  <div className="text-right">
+                    <span>{selectedTickets[ticket._id]}x</span>
+                  </div>
+                )}
               </div>
-            ))}
-
-            {/* Total and Book Button */}
-            <div className="mt-6 space-y-4">
-              <div className="flex justify-between items-center text-lg font-semibold">
-                <span>Tổng:</span>
-                <span>{calculateTotal().toLocaleString()}đ</span>
-              </div>
+            )
+          ))}
+          {/* Total and Book Button */}
+          <div className="mt-6 space-y-4">
+            <div className="flex justify-between items-center text-lg font-semibold">
+              <span>Tổng:</span>
+              <span>{calculateTotal().toLocaleString()}$</span>
+            </div>
+            {!showOrderModal && (
               <button
-                onClick={handleBooking}
+                onClick={handleContinue}
                 disabled={calculateTotal() === 0}
                 className={`w-full py-3 rounded-lg transition-colors ${
                   calculateTotal() === 0
@@ -191,9 +188,20 @@ const EventdetailDisplay = () => {
               >
                 Tiếp tục
               </button>
-            </div>
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Order Modal */}
+      <OrderModal
+        isOpen={showOrderModal}
+        onClose={() => setShowOrderModal(false)}
+        event={event}
+        selectedTickets={selectedTickets}
+        tickets={tickets}
+        total={calculateTotal()}
+      />
       </div>
     </div>
   );

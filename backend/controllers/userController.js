@@ -55,4 +55,27 @@ const loginUser = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser };
+ const getUserInfo = async (req, res) => {
+    try {
+        const userId = req.user?.userId; // Lấy userId từ token trong middleware
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized. User ID is missing." });
+        }
+
+        // Lấy thông tin user, bỏ password & __v
+        const user = await userModel.findById(userId).select("-password -__v");
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        res.json({ success: true, data: user });
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        res.status(500).json({ success: false, message: "Server error." });
+    }
+};
+
+
+export { registerUser, loginUser, getUserInfo };

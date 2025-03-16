@@ -1,12 +1,17 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4001/api/orders';
+const API_URL = 'http://localhost:4001/api/order';
 
-export const createOrder = async (orderData) => {
+export const placeOrder = async (orderData) => {
   try {
-    const response = await axios.post(API_URL, orderData);
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`${API_URL}/place`, orderData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
-    throw error.response?.data || error.message;
+    throw error.response?.data || { success: false, message: "Failed to place order" };
   }
 };
