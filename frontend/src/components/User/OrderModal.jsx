@@ -47,8 +47,8 @@ const OrderModal = ({ isOpen, onClose, event, selectedTickets, tickets, total })
   
       const response = await placeOrder(orderData);
       
-      if (response.success) {
-        window.location.href = `/payment?orderId=${response.orderId}&amount=${total}`;
+      if (response.success && response.sessionUrl) {
+        window.location.href = response.sessionUrl;
       }
     } catch (err) {
       setError('Failed to place order. Please try again.');

@@ -8,6 +8,8 @@ import TradeTicket from "./components/User/TradeTicket";
 import UserProfile from "./components/User/UserProfile";
 import ViewEvent from "./pages/User/ViewEvent";
 import OrderConfirmation from "./components/User/OderComfirmation";
+import VerifyPayment from "./components/User/VerifyPayment";
+
 import Dashboard from "./pages/Admin/Dashboard";
 import AdminDashboard from "./components/Admin/AdminDashboard";
 import EventList from "./components/Admin/EventList";
@@ -25,6 +27,7 @@ const App = () => {
                 <Route path="/home" element={<Home />} />
                 <Route path="/events/:id" element={<ViewEvent />} />
                 <Route path="/place-order" element={<OrderConfirmation />} />
+                <Route path="/verify" element={<VerifyPayment />} />
                 <Route path="/user" element={<UserDashboard />}>
                     <Route path="tickets" element={<TicketDisplay />} />
                     <Route path="trade" element={<TradeTicket />} />
