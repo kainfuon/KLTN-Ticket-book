@@ -2,10 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearch, FaUser } from 'react-icons/fa';
 import reactLogo from '../../assets/react.svg';
+import { useNavigate } from 'react-router-dom';
+
 
 const UserNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -75,7 +78,10 @@ const UserNavbar = () => {
                 </Link>
                 <div className="border-t border-gray-100"></div>
                 <button
-                  onClick={() => {/* Add logout logic */}}
+                  onClick={() => {
+                    localStorage.removeItem("Authorization"); 
+                    navigate("/login"); // Điều hướng về trang login
+                  }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                 >
                   Sign Out
