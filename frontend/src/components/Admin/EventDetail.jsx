@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getEventById } from '../../services/eventService';
-import { createTicket, getTicketsByEvent } from '../../services/ticketService';
-import { FaArrowLeft, FaPlus } from 'react-icons/fa';
+import { createTicket, getTicketsByEvent, deleteTicket, updateTicket } from '../../services/ticketService';
+import { FaArrowLeft, FaPlus, FaEdit, FaTrash  } from 'react-icons/fa';
 import TicketAdd from './TicketAdd';
 import TicketChart from '../../assets/TicketChart';
+import { toast } from 'sonner';
+
 
 const EventDetail = () => {
 
@@ -15,11 +17,7 @@ const EventDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showTicketForm, setShowTicketForm] = useState(false);
-    const [ticketForm, setTicketForm] = useState({
-        type: '',
-        price: '',
-        totalSeats: '',
-    });
+    const [editingTicket, setEditingTicket] = useState(null);
 
     useEffect(() => {
         fetchEventData();
@@ -49,20 +47,45 @@ const EventDetail = () => {
         }
     };
 
-    const handleTicketSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await createTicket({
-                ...ticketForm,
-                eventId: id,
-            });
-            setShowTicketForm(false);
-            fetchEventData(); // Refresh ticket list
-            setTicketForm({ type: '', price: '', totalSeats: '' });
-        } catch (err) {
-            setError('Failed to create ticket');
+    // Helper function to check if a ticket has been sold
+    const hasTicketsSold = (ticket) => {
+        return ticket.totalSeats - ticket.availableSeats > 0;
+    };
+
+    const handleEdit = (ticket) => {
+        setEditingTicket(ticket);
+        setShowTicketForm(true);
+    };
+
+
+    const handleDelete = async (ticket) => {
+        // Always check if tickets have been sold before deletion
+        if (hasTicketsSold(ticket)) {
+          toast.error("Cannot delete ticket that has been sold. You can mark it as 'sold out' instead.");
+          return;
+        }
+    
+        if (window.confirm('Are you sure you want to delete this ticket?')) {
+          try {
+            const response = await deleteTicket(ticket._id);
+            if (response.success) {
+              toast.success('Ticket deleted successfully');
+              fetchEventData();
+            } else {
+              toast.error(response.message || 'Failed to delete ticket');
+            }
+          } catch (error) {
+            toast.error('Failed to delete ticket');
+            console.error('Error deleting ticket:', error);
+          }
         }
     };
+    
+    const handleCloseModal = () => {
+        setShowTicketForm(false);
+        setEditingTicket(null);
+    };
+    
 
     if (loading) return <div className="p-6">Loading...</div>;
     if (error) return <div className="p-6 text-red-500">{error}</div>;
@@ -178,77 +201,115 @@ const EventDetail = () => {
         {/* Tickets Section */}
         <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold">Tickets Management</h3>
-                    <button
-                        onClick={() => setShowTicketForm(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer"
-                    >
-                        <FaPlus size={16} />
-                        Add New Ticket
-                    </button>
+            <h3 className="text-xl font-bold">Tickets Management</h3>
+            <button
+                onClick={() => setShowTicketForm(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer"
+            >
+                <FaPlus size={16} />
+                Add New Ticket
+            </button>
             </div>
-
-           
-
             {/* Tickets Table */}
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Type
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Price
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total Seats
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Available
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {tickets.map((ticket) => (
-                            <tr key={ticket._id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {ticket.type}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    ${ticket.price}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {ticket.totalSeats}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {ticket.availableSeats}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full
-                                        ${ticket.status === 'available'
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-800'}`}
-                                    >
-                                        {ticket.status}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total Seats
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Available
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                    </th>
+                </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                {tickets.map((ticket) => {
+                    const ticketsSold = hasTicketsSold(ticket);
+                    
+                    return (
+                    <tr key={ticket._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">{ticket.type}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">${ticket.price}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        {ticket.totalSeats}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        {ticket.availableSeats}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                            className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            ticket.status === 'available'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                        >
+                            {ticket.status}
+                        </span>
+                        {ticketsSold && (
+                            <span className="ml-2 text-xs text-gray-500">
+                            ({ticket.totalSeats - ticket.availableSeats} sold)
+                            </span>
+                        )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                            <button
+                            onClick={() => handleEdit(ticket)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                            title="Edit ticket"
+                            >
+                            <FaEdit size={18} />
+                            </button>
+                            {!ticketsSold ? (
+                            <button
+                                onClick={() => handleDelete(ticket)}
+                                className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                                title="Delete ticket"
+                            >
+                                <FaTrash size={18} />
+                            </button>
+                            ) : (
+                            <span
+                                className="text-gray-400 cursor-not-allowed"
+                                title="Cannot delete ticket that has been sold"
+                            >
+                                <FaTrash size={18} />
+                            </span>
+                            )}
+                        </div>
+                        </td>
+                    </tr>
+                    );
+                })}
+                </tbody>
+            </table>
             </div>
         </div>
 
-        {/* Ticket Add Modal */}
+        {/* Ticket Add/Edit Modal */}
         {showTicketForm && (
-            <TicketAdd 
-                eventId={id}
-                onClose={() => setShowTicketForm(false)}
-                onSuccess={fetchEventData}
+            <TicketAdd
+            eventId={id}
+            onClose={handleCloseModal}
+            onSuccess={() => {
+                fetchEventData();
+                handleCloseModal();
+            }}
+            ticket={editingTicket} // Pass the ticket data for editing
             />
         )}
     

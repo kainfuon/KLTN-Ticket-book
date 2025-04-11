@@ -44,6 +44,7 @@ const App = () => {
                     <Route path="dashboard" element={<AdminDashboard />} />
                     <Route path="events" element={<EventList />} />
                     <Route path="events/add" element={<EventAdd />} /> {/* Add this line */}
+                    <Route path="events/edit/:id" element={<EventAdd/>} />
                     <Route path="events/:id" element={<EventDetail />} />
                     {/* Bạn có thể thêm các route khác như customers, tickets, ... */}
                 </Route>

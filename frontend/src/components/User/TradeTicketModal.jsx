@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { FaTimes, FaExchangeAlt, FaInfoCircle, FaLock } from 'react-icons/fa';
+import { FaTimes, FaExchangeAlt, FaInfoCircle, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { tradeTicket } from '../../services/userticketService';
 import { format } from 'date-fns';
 
 const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
   const [formData, setFormData] = useState({
-    recipientId: '',
+    recipientEmail: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
@@ -23,25 +23,32 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
     if (error) setError('');
   };
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
   const validateForm = () => {
-    if (!formData.recipientId.trim()) {
-      setError('Recipient ID is required');
+    if (!formData.recipientEmail.trim()) {
+      setError('Recipient email is required');
       return false;
     }
+    
+    if (!validateEmail(formData.recipientEmail)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
     if (!formData.password) {
       setError('Password is required');
       return false;
     }
-    if (formData.recipientId.trim() === ticket.ownerId) {
-      setError('Cannot trade ticket to yourself');
-      return false;
-    }
+
     return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
 
     if (!confirmStep) {
@@ -67,6 +74,10 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const renderTicketDetails = () => (
@@ -111,7 +122,7 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
         Confirm Trade Details
       </h4>
       <div className="mt-3 space-y-2 text-sm text-yellow-700">
-        <p>• Recipient ID: {formData.recipientId}</p>
+        <p>• Recipient Email: {formData.recipientEmail}</p>
         <p>• Event: {ticket.eventId.title}</p>
         <p>• Ticket Type: {ticket.ticketType.type}</p>
         <p className="font-medium mt-3">
@@ -130,7 +141,7 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
             <FaExchangeAlt className="mr-2" />
             <h2 className="text-xl font-semibold">Trade Ticket</h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-300 hover:text-white transition-colors"
           >
@@ -153,18 +164,21 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recipient ID *
+                Recipient Email *
               </label>
-              <input
-                type="text"
-                name="recipientId"
-                value={formData.recipientId}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-                placeholder="Enter the recipient's user ID"
-                disabled={confirmStep}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  name="recipientEmail"
+                  value={formData.recipientEmail}
+                  onChange={handleChange}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  placeholder="Enter the recipient's email address"
+                  disabled={confirmStep}
+                />
+                
+              </div>
             </div>
 
             <div>
@@ -183,10 +197,14 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={togglePasswordVisibility}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  <FaLock />
+                  {showPassword ? (
+                    <FaEyeSlash className="w-5 h-5" />
+                  ) : (
+                    <FaEye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -196,7 +214,7 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
                 <p className="flex items-start">
                   <FaInfoCircle className="mr-2 mt-0.5 flex-shrink-0" />
                   This action will permanently transfer the ticket to the recipient.
-                  Make sure you have entered the correct recipient ID.
+                  Make sure you have entered the correct email address.
                 </p>
               </div>
             )}
@@ -221,11 +239,11 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
               type="submit"
               disabled={loading}
               className={`px-4 py-2 rounded-lg flex items-center ${
-                loading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : confirmStep 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-blue-600 hover:bg-blue-700'
+                loading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : confirmStep
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-blue-600 hover:bg-blue-700'
               } text-white transition-colors`}
             >
               {loading ? (

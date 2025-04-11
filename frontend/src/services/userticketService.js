@@ -47,10 +47,9 @@ export const tradeTicket = async (ticketId, tradeData) => {
   try {
     const token = localStorage.getItem('token');
     const response = await axios.post(
-      `${API_URL}/trade`,
+      `${API_URL}/${ticketId}/trade`,
       {
-        ticketId,
-        recipientId: tradeData.recipientId,
+        recipientEmail: tradeData.recipientEmail,
         password: tradeData.password
       },
       {
@@ -61,6 +60,22 @@ export const tradeTicket = async (ticketId, tradeData) => {
     );
     return response.data;
   } catch (error) {
+    if (error.response?.data) {
+      throw error.response.data;
+    }
     throw error.response?.data || { success: false, message: "Failed to trade ticket" };
+  }
+};
+
+export const generateTicketQR = async (ticketId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${ticketId}/qr`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { success: false, message: 'Failed to generate QR code' };
   }
 };

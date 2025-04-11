@@ -46,11 +46,14 @@ const generateTicketQR = async (req, res) => {
             return res.status(404).json({ success: false, message: "Ticket not found." });
         }
 
+        const timestamp = Date.now();
+
         const qrData = JSON.stringify({
             ticketId: ticket._id,
             eventId: ticket.eventId,
             ticketType: ticket.ticketType,
-            ownerId: ticket.ownerId
+            ownerId: ticket.ownerId,
+            timestamp
         });
 
         const qrCode = await QRCode.toDataURL(qrData);
@@ -62,38 +65,106 @@ const generateTicketQR = async (req, res) => {
 };
 
 // Trade ticket
+// const tradeTicket = async (req, res) => {
+//     try {
+//         const { ticketId, recipientId, password } = req.body;
+//         const userId = req.user.userId;
+
+//         if (!ticketId || !recipientId || !password) {
+//             return res.status(400).json({ success: false, message: "Missing required fields." });
+//         }
+
+//         // Lấy user + password
+//         const user = await userModel.findById(userId).select("+password");
+//         if (!user || !(await user.comparePassword(password))) {
+//             return res.status(401).json({ success: false, message: "Invalid password." });
+//         }
+
+//         // Tìm vé & đổi chủ sở hữu
+//         const ticket = await userTicketModel.findOne({ _id: ticketId, ownerId: userId });
+//         if (!ticket) {
+//             return res.status(404).json({ success: false, message: "Ticket not found or not owned by you." });
+//         }
+
+//         ticket.ownerId = recipientId;
+//         ticket.isTraded = true;
+//         await ticket.save();
+
+//         res.json({ success: true, message: "Ticket traded successfully." });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ success: false, message: "Server error." });
+//     }
+// };
+// Trade ticket to another user
 const tradeTicket = async (req, res) => {
     try {
-        const { ticketId, recipientId, password } = req.body;
-        const userId = req.user.userId;
-
-        if (!ticketId || !recipientId || !password) {
-            return res.status(400).json({ success: false, message: "Missing required fields." });
-        }
-
-        // Lấy user + password
-        const user = await userModel.findById(userId).select("+password");
-        if (!user || !(await user.comparePassword(password))) {
-            return res.status(401).json({ success: false, message: "Invalid password." });
-        }
-
-        // Tìm vé & đổi chủ sở hữu
-        const ticket = await userTicketModel.findOne({ _id: ticketId, ownerId: userId });
-        if (!ticket) {
-            return res.status(404).json({ success: false, message: "Ticket not found or not owned by you." });
-        }
-
-        ticket.ownerId = recipientId;
-        ticket.isTraded = true;
-        await ticket.save();
-
-        res.json({ success: true, message: "Ticket traded successfully." });
+      const { ticketId } = req.params;
+      const { recipientEmail, password } = req.body;
+  
+      // Verify current user's password
+      const currentUser = await userModel.findById(req.user.userId);
+      const isPasswordValid = await currentUser.comparePassword(password);
+      
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid password."
+        });
+      }
+  
+      // Find recipient by email
+      const recipient = await userModel.findOne({ email: recipientEmail });
+      if (!recipient) {
+        return res.status(404).json({
+          success: false,
+          message: "Recipient email not found."
+        });
+      }
+  
+      // Check if user is trying to trade to themselves
+      if (recipient._id.toString() === req.user.userId) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot trade ticket to yourself."
+        });
+      }
+  
+      // Find and verify ticket ownership
+      const ticket = await userTicketModel.findOne({
+        _id: ticketId,
+        ownerId: req.user.userId
+      });
+  
+      if (!ticket) {
+        return res.status(404).json({
+          success: false,
+          message: "Ticket not found or you don't own this ticket."
+        });
+      }
+  
+      // Update ticket ownership
+      ticket.ownerId = recipient._id;
+      await ticket.save();
+  
+      // You might want to add notification or email service here
+      // to notify the recipient about the ticket transfer
+  
+      res.json({
+        success: true,
+        message: "Ticket successfully transferred.",
+        recipientEmail: recipient.email
+      });
+  
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Server error." });
+      console.error('Trade ticket error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Server error while trading ticket."
+      });
     }
-};
-
+  };
+  
 
 
 export {getUserTickets, getTicketDetails, generateTicketQR, tradeTicket};

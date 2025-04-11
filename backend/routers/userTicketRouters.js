@@ -5,7 +5,7 @@ import { verifyToken } from "../middleware/auth.js";
 const userTicketRouter = express.Router()
 
 userTicketRouter.get("/my-tickets", verifyToken, getUserTickets);
-userTicketRouter.post("/trade", verifyToken, tradeTicket);
+userTicketRouter.post("/:ticketId/trade", verifyToken, tradeTicket);
 userTicketRouter.get("/:ticketId/qr", verifyToken, generateTicketQR); 
 userTicketRouter.get("/:ticketId", verifyToken, getTicketDetails); 
 

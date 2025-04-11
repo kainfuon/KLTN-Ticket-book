@@ -18,7 +18,7 @@ const upload = multer({ storage });
 eventRouter.post("/add", verifyAdmin, upload.single("image"),  addEvent);
 eventRouter.get("/list", getlistEvent);
 eventRouter.get("/:id", getEventDetail);
-eventRouter.post("/remove", verifyAdmin, removeEvent);
+eventRouter.delete("/remove/:eventId", verifyAdmin, removeEvent);
 eventRouter.put("/update/:eventId", verifyAdmin, upload.single("image"), updateEvent);
 
 

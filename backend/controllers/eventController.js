@@ -92,50 +92,85 @@ const removeEvent = async (req, res) => {
 // Cập nhật thông tin sự kiện (hỗ trợ cập nhật ảnh)
 const updateEvent = async (req, res) => {
     try {
-        const { eventId } = req.params;
-        const { title, description, eventDate, venue, saleStartDate, status } = req.body;
-        const imageFile = req.file; // Ảnh mới (nếu có)
-
-        console.log("Received Event ID:", eventId); // Debugging
-        console.log("Uploaded Image:", imageFile?.filename); // Debugging
-
-        // Kiểm tra sự kiện có tồn tại không
-        const event = await eventModel.findById(eventId);
-        if (!event) {
-            return res.status(404).json({ success: false, message: "Event not found." });
+      const { eventId } = req.params;
+  
+      // Find the existing event
+      const existingEvent = await eventModel.findById(eventId);
+      if (!existingEvent) {
+        // If image was uploaded, delete it from temp
+        if (req.file) {
+          fs.unlink(req.file.path, (err) => {
+            if (err) console.log("Error deleting temp image:", err);
+          });
         }
-
-        // Nếu có ảnh mới, xoá ảnh cũ
-        if (imageFile) {
-            if (event.image) {
-                const oldImagePath = `uploads/${event.image}`;
-                fs.access(oldImagePath, fs.constants.F_OK, (err) => {
-                    if (!err) {
-                        fs.unlink(oldImagePath, (unlinkErr) => {
-                            if (unlinkErr) console.log("Error deleting old image:", unlinkErr);
-                        });
-                    }
-                });
-            }
-            event.image = imageFile.filename; // Cập nhật ảnh mới
+        return res.status(404).json({ success: false, message: "Event not found." });
+      }
+  
+      // Get update data from request body
+      const { title, description, eventDate, saleStartDate, venue, status } = req.body;
+  
+      // Prepare update data
+      const updateData = {
+        title: title || existingEvent.title,
+        description: description || existingEvent.description,
+        eventDate: eventDate || existingEvent.eventDate,
+        saleStartDate: saleStartDate || existingEvent.saleStartDate,
+        venue: venue || existingEvent.venue,
+        status: status || existingEvent.status
+      };
+  
+      // Handle image update if new image is uploaded
+      if (req.file) {
+        const tempImagePath = req.file.path;
+        const finalImagePath = path.join("uploads", req.file.filename);
+  
+        // Delete old image if it exists
+        if (existingEvent.image) {
+          const oldImagePath = path.join("uploads", existingEvent.image);
+          fs.unlink(oldImagePath, (err) => {
+            if (err) console.log("Error deleting old image:", err);
+          });
         }
-
-        // Cập nhật thông tin khác
-        event.title = title || event.title;
-        event.description = description || event.description;
-        event.eventDate = eventDate || event.eventDate;
-        event.saleStartDate = saleStartDate || event.saleStartDate;
-        event.venue = venue || event.venue;
-        event.status = status || event.status;
-
-        const updatedEvent = await event.save();
-
-        res.json({ success: true, message: "Event updated successfully!", data: updatedEvent });
+  
+        // Move new image from temp to uploads
+        fs.rename(tempImagePath, finalImagePath, (err) => {
+          if (err) console.log("Error moving file:", err);
+        });
+  
+        // Update image filename in database
+        updateData.image = req.file.filename;
+      }
+  
+      // Update event in database
+      const updatedEvent = await eventModel.findByIdAndUpdate(
+        eventId,
+        updateData,
+        { new: true, runValidators: true }
+      );
+  
+      res.json({
+        success: true,
+        message: "Event updated successfully!",
+        data: updatedEvent
+      });
+  
     } catch (error) {
-        console.error("Error updating event:", error);
-        res.status(500).json({ success: false, message: "Server error." });
+      console.log("Error updating event:", error);
+  
+      // If error occurs and new image was uploaded, delete it from temp
+      if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.log("Error deleting temp image:", err);
+        });
+      }
+  
+      res.status(500).json({
+        success: false,
+        message: "Error updating event."
+      });
     }
-};
+  };
+  
 
 
 export { addEvent, getlistEvent, getEventDetail, removeEvent , updateEvent };
