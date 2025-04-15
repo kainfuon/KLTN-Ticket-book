@@ -4,7 +4,7 @@ import { getEventSalesStats, getTicketTypeSalesStats } from "../controllers/stat
 
 const statsRouter = express.Router();
 
-statsRouter.get("/event-sales", verifyAdmin, getEventSalesStats);
-statsRouter.get("/ticket-sales/:eventId", verifyAdmin, getTicketTypeSalesStats);
+statsRouter.get("/events", verifyAdmin, getEventSalesStats);
+statsRouter.get("/tickets/:eventId", verifyAdmin, getTicketTypeSalesStats);
 
 export default statsRouter;

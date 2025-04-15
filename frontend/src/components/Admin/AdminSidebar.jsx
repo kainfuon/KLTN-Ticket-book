@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate  } from "react-router-dom";
-import { FaTachometerAlt, FaCalendarAlt, FaTicketAlt, FaUsers, FaBox, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaTachometerAlt, FaCalendarAlt, FaChartBar , FaUsers, FaBox, FaCog, FaSignOutAlt } from "react-icons/fa";
 
 const AdminSidebar = () => {
 
@@ -24,11 +24,11 @@ const AdminSidebar = () => {
           <span className="hidden md:inline">Events</span>
         </Link>
 
-        <Link to="/admin/tickets" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+        <Link to="/admin/statistics" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
           <span className="w-8 h-8 flex items-center justify-center">
-            <FaTicketAlt className="text-gray-900 text-2xl" />
+            <FaChartBar  className="text-gray-900 text-2xl" />
           </span>
-          <span className="hidden md:inline">Tickets</span>
+          <span className="hidden md:inline">Statistics</span>
         </Link>
 
         <Link to="/admin/customers" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
