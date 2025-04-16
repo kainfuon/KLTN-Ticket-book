@@ -66,13 +66,24 @@ const updateTicket = async (req, res) => {
 const deleteTicket = async (req, res) => {
     try {
         const { ticketId } = req.params;
-
-        // Find and delete ticket
-        const deletedTicket = await ticketModel.findByIdAndDelete(ticketId);
-        if (!deletedTicket) {
-            return res.status(404).json({ success: false, message: "Ticket not found." });
+    
+        // Find the ticket first
+        const ticket = await ticketModel.findById(ticketId);
+        if (!ticket) {
+          return res.status(404).json({ success: false, message: "Ticket not found." });
         }
-
+    
+        // If ticket has already been sold, prevent deletion
+        if (ticket.ticketsSold > 0) {
+          return res.status(400).json({
+            success: false,
+            message: "This ticket has been sold and cannot be deleted. Please change its status to 'sold_out'."
+          });
+        }
+    
+        // Ticket not sold => allow deletion
+        await ticketModel.findByIdAndDelete(ticketId);
+    
         res.json({ success: true, message: "Ticket deleted successfully!" });
     } catch (error) {
         console.error(error);

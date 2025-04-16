@@ -99,19 +99,19 @@ const EventList = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
                     Event Name
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
                     Date
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
                     Venue
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -146,10 +146,10 @@ const EventList = () => {
                             </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-base ">
                         {new Date(event.eventDate).toLocaleDateString('vi-VN')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-base ">
                         {event.venue}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

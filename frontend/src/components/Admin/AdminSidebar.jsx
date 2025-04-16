@@ -45,13 +45,6 @@ const AdminSidebar = () => {
           <span className="hidden md:inline">Orders</span>
         </Link>
 
-        <Link to="/admin/settings" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
-          <span className="w-8 h-8 flex items-center justify-center">
-            <FaCog className="text-gray-900 text-2xl" />
-          </span>
-          <span className="hidden md:inline">Settings</span>
-        </Link>
-
         <button
           onClick={() => {
             localStorage.removeItem("Authorization"); 

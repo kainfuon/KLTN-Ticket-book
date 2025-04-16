@@ -222,10 +222,7 @@ const EventDetail = () => {
                     Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Seats
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Available
+                    Seats Distribution
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -237,17 +234,41 @@ const EventDetail = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                 {tickets.map((ticket) => {
-                    const ticketsSold = hasTicketsSold(ticket);
+                    const ticketsSold = ticket.totalSeats - ticket.availableSeats;
+                    const soldPercentage = (ticketsSold / ticket.totalSeats) * 100;
                     
                     return (
                     <tr key={ticket._id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">{ticket.type}</td>
                         <td className="px-6 py-4 whitespace-nowrap">${ticket.price}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                        {ticket.totalSeats}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                        {ticket.availableSeats}
+                        <td className="px-6 py-4">
+                        <div className="w-full max-w-xs">
+                            {/* Progress bar container */}
+                            <div className="flex items-center mb-2">
+                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                className="h-full bg-blue-600 rounded-full"
+                                style={{ width: `${soldPercentage}%` }}
+                                />
+                            </div>
+                            <span className="ml-2 text-base ">
+                                {Math.round(soldPercentage)}%
+                            </span>
+                            </div>
+                            
+                            {/* Seats information */}
+                            <div className="flex justify-between text-xs text-gray-500">
+                            <div>
+                                <span className="font-medium">Total:</span> {ticket.totalSeats}
+                            </div>
+                            <div>
+                                <span className="font-medium">Sold:</span> {ticketsSold}
+                            </div>
+                            {/* <div>
+                                <span className="font-medium">Available:</span> {ticket.availableSeats}
+                            </div> */}
+                            </div>
+                        </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -259,11 +280,6 @@ const EventDetail = () => {
                         >
                             {ticket.status}
                         </span>
-                        {ticketsSold && (
-                            <span className="ml-2 text-xs text-gray-500">
-                            ({ticket.totalSeats - ticket.availableSeats} sold)
-                            </span>
-                        )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
@@ -274,7 +290,7 @@ const EventDetail = () => {
                             >
                             <FaEdit size={18} />
                             </button>
-                            {!ticketsSold ? (
+                            {ticketsSold === 0 ? (
                             <button
                                 onClick={() => handleDelete(ticket)}
                                 className="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -298,6 +314,7 @@ const EventDetail = () => {
                 </tbody>
             </table>
             </div>
+
         </div>
 
         {/* Ticket Add/Edit Modal */}
