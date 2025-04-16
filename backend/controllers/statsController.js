@@ -8,7 +8,7 @@ const getEventSalesStats = async (req, res) => {
 
         const salesStats = await Promise.all(events.map(async (event) => {
             const tickets = await ticketModel.find({ eventId: event._id });
-
+            let totalTickets = tickets.reduce((sum, ticket) => sum + ticket.totalSeats, 0);
             let totalTicketsSold = tickets.reduce((sum, ticket) => sum + ticket.ticketsSold, 0);
             let totalRevenue = tickets.reduce((sum, ticket) => sum + ticket.ticketsSold * ticket.price, 0);
 
@@ -16,6 +16,7 @@ const getEventSalesStats = async (req, res) => {
                 eventId: event._id,
                 eventTitle: event.title,
                 saleStartDate: event.saleStartDate,
+                ticketsTotal: totalTickets,
                 ticketsSold: totalTicketsSold,
                 totalRevenue
             };

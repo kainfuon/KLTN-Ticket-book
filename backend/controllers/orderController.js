@@ -91,115 +91,109 @@ const placeOrder = async (req, res) => {
 };
 
 const confirmPayment = async (req, res) => {
-    try {
-      const { orderId } = req.body;
-  
-      // Use findOneAndUpdate to atomically check and update the order status
-      // This prevents race conditions
-      const order = await orderModel.findOneAndUpdate(
+  try {
+    const { orderId } = req.body;
+
+    // Atomically check & mark the order as processing
+    const order = await orderModel.findOneAndUpdate(
+      {
+        _id: orderId,
+        status: "pending",
+        userTickets: { $size: 0 }
+      },
+      { status: "processing" },
+      { new: true, runValidators: true }
+    )
+      .populate("tickets.ticketType")
+      .populate("eventId");
+
+    if (!order) {
+      const existingOrder = await orderModel.findById(orderId)
+        .populate("tickets.ticketType")
+        .populate("eventId");
+
+      if (!existingOrder) {
+        return res.status(404).json({ success: false, message: "Order not found." });
+      }
+
+      return res.json({
+        success: true,
+        message: "Order already processed.",
+        data: existingOrder
+      });
+    }
+
+    let createdUserTickets = [];
+
+    for (const ticketItem of order.tickets) {
+      const updatedTicket = await ticketModel.findOneAndUpdate(
         {
-          _id: orderId,
-          status: "pending", // Only process pending orders
-          userTickets: { $size: 0 } // Only process if no tickets created yet
+          _id: ticketItem.ticketType,
+          availableSeats: { $gte: ticketItem.quantity }
         },
-        { status: "processing" },
-        { new: true, runValidators: true }
-      ).populate("tickets.ticketType").populate("eventId");
-  
-      // If no order found or already processed, try to find it to return current state
-      if (!order) {
-        const existingOrder = await orderModel.findById(orderId)
-          .populate("tickets.ticketType")
-          .populate("eventId");
-  
-        if (!existingOrder) {
-          return res.status(404).json({ success: false, message: "Order not found." });
-        }
-  
-        // If order exists but wasn't updated, it means it's already processed
-        return res.json({
-          success: true,
-          message: "Order already processed.",
-          data: existingOrder
-        });
-      }
-  
-      let createdUserTickets = [];
-  
-      // Process each ticket type in the order
-      for (const ticketItem of order.tickets) {
-        // Use findOneAndUpdate for atomic ticket updates
-        const updatedTicket = await ticketModel.findOneAndUpdate(
-          {
-            _id: ticketItem.ticketType,
-            availableSeats: { $gte: ticketItem.quantity }
-          },
-          {
-            $inc: {
-              availableSeats: -ticketItem.quantity,
-              ticketsSold: ticketItem.quantity
-            },
-            $set: {
-              status: function() {
-                return this.availableSeats - ticketItem.quantity <= 0 ? "sold_out" : this.status;
-              }
-            }
-          },
-          { new: true }
-        );
-  
-        if (!updatedTicket) {
-          // If ticket update fails, revert order status
-          await orderModel.findByIdAndUpdate(orderId, { status: "pending" });
-          return res.status(400).json({
-            success: false,
-            message: `Not enough available seats for ticket type: ${ticketItem.ticketType}`
-          });
-        }
-  
-        // Create all userTickets for this ticket type at once
-        const userTicketsToCreate = Array(ticketItem.quantity).fill().map(() => ({
-          ticketType: updatedTicket._id,
-          eventId: order.eventId,
-          ownerId: order.userId,
-          orderId: order._id // Add reference to order
-        }));
-  
-        // Use insertMany for better performance and atomicity
-        const newUserTickets = await userTicketModel.insertMany(userTicketsToCreate);
-        createdUserTickets.push(...newUserTickets.map(ticket => ticket._id));
-      }
-  
-      // Final update to the order
-      const finalOrder = await orderModel.findOneAndUpdate(
-        { _id: orderId, status: "processing" },
         {
-          status: "paid",
-          userTickets: createdUserTickets
+          $inc: {
+            availableSeats: -ticketItem.quantity,
+            ticketsSold: ticketItem.quantity
+          }
         },
         { new: true }
       );
-  
-      if (!finalOrder) {
-        throw new Error('Failed to update order status to paid');
+
+      if (!updatedTicket) {
+        await orderModel.findByIdAndUpdate(orderId, { status: "pending" });
+        return res.status(400).json({
+          success: false,
+          message: `Not enough available seats for ticket type: ${ticketItem.ticketType}`
+        });
       }
-  
-      res.json({
-        success: true,
-        message: "Payment confirmed and tickets issued successfully!",
-        data: finalOrder
-      });
-  
-    } catch (error) {
-      console.error("🚨 Error in confirmPayment:", error);
-      // If any error occurs, try to revert order status to pending
-      await orderModel.findOneAndUpdate(
-        { _id: req.body.orderId, status: "processing" },
-        { status: "pending" }
-      );
-      res.status(500).json({ success: false, message: "Internal server error." });
+
+      // After update, mark ticket as sold_out if necessary
+      if (updatedTicket.availableSeats === 0 && updatedTicket.status !== "sold_out") {
+        updatedTicket.status = "sold_out";
+        await updatedTicket.save();
+      }
+
+      const userTicketsToCreate = Array(ticketItem.quantity).fill().map(() => ({
+        ticketType: updatedTicket._id,
+        eventId: order.eventId,
+        ownerId: order.userId,
+        orderId: order._id
+      }));
+
+      const newUserTickets = await userTicketModel.insertMany(userTicketsToCreate);
+      createdUserTickets.push(...newUserTickets.map(ticket => ticket._id));
     }
-  };
+
+    const finalOrder = await orderModel.findOneAndUpdate(
+      { _id: orderId, status: "processing" },
+      {
+        status: "paid",
+        userTickets: createdUserTickets
+      },
+      { new: true }
+    );
+
+    if (!finalOrder) {
+      throw new Error('Failed to update order status to paid');
+    }
+
+    res.json({
+      success: true,
+      message: "Payment confirmed and tickets issued successfully!",
+      data: finalOrder
+    });
+
+  } catch (error) {
+    console.error("🚨 Error in confirmPayment:", error);
+    await orderModel.findOneAndUpdate(
+      { _id: req.body.orderId, status: "processing" },
+      { status: "pending" }
+    );
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
   
 
 

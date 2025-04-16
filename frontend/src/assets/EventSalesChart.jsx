@@ -23,23 +23,28 @@ ChartJS.register(
 );
 
 const EventSalesChart = ({ data }) => {
+  // Sort data by date
+  const sortedData = [...data].sort((a, b) => 
+    new Date(a.saleStartDate) - new Date(b.saleStartDate)
+  );
+
   const chartData = {
-    labels: data.map(event => format(new Date(event.saleStartDate), 'MMM dd')),
+    labels: sortedData.map(event => 
+      format(new Date(event.saleStartDate), 'MMM dd, yyyy')
+    ),
     datasets: [
       {
         label: 'Revenue',
-        data: data.map(event => event.totalRevenue),
+        data: sortedData.map(event => event.totalRevenue),
         fill: false,
         borderColor: 'rgba(75,192,192,1)',
-        backgroundColor: 'rgba(75,192,192,0.4)',
         tension: 0.4
       },
       {
         label: 'Tickets Sold',
-        data: data.map(event => event.ticketsSold),
+        data: sortedData.map(event => event.ticketsSold),
         fill: false,
         borderColor: 'rgba(153, 102, 255, 1)',
-        backgroundColor: 'rgba(153, 102, 255, 0.4)',
         tension: 0.4
       }
     ]
@@ -81,22 +86,41 @@ const EventSalesChart = ({ data }) => {
       }
     },
     scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 10 // Adjust this value based on your needs
+        }
+      },
       y: {
         beginAtZero: true,
         grid: {
           drawBorder: false
-        }
-      },
-      x: {
-        grid: {
-          display: false
+        },
+        ticks: {
+          callback: function(value) {
+            if (this.chart.scales.y.id === 'revenue') {
+              return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(value);
+            }
+            return value;
+          }
         }
       }
     }
   };
 
   return (
-    <div className="h-[300px]"> {/* Fixed height container */}
+    <div className="h-[300px]">
       <Line data={chartData} options={options} />
     </div>
   );

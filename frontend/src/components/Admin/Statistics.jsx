@@ -104,49 +104,91 @@ const Statistics = () => {
           {eventStats && <EventSalesChart data={eventStats} />}
         </div>
         
-        {/* Event Sales Data Table */}
-        <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-                <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-1/4">
-                    Event
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-1/4">
-                    Sale Start Date
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-1/4">
-                    Tickets Sold
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-1/4">
-                    Revenue
-                    </th>
-                </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {eventStats?.map((event) => (
-                <tr key={event.eventId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
-                    {event.eventTitle}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base">
-                    {format(new Date(event.saleStartDate), 'MMM dd, yyyy')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base">
+       {/* Event Sales Data Table */}
+<div className="overflow-x-auto">
+  <table className="min-w-full divide-y divide-gray-200">
+    <thead className="bg-gray-50">
+      <tr>
+        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-[25%]">
+          Event
+        </th>
+        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-[15%]">
+          Sale Start Date
+        </th>
+        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-[45%]">
+          Tickets Sales Progress
+        </th>
+        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider w-[15%]">
+          Revenue
+        </th>
+      </tr>
+    </thead>
+    <tbody className="bg-white divide-y divide-gray-200">
+      {eventStats?.map((event) => {
+        const soldPercentage = (event.ticketsSold / event.ticketsTotal) * 100;
+        
+        return (
+          <tr key={event.eventId} className="hover:bg-gray-50">
+            <td className="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
+              {event.eventTitle}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
+              {format(new Date(event.saleStartDate), 'MMM dd, yyyy')}
+            </td>
+            <td className="px-6 py-4">
+              <div className="flex items-center gap-8">
+                {/* Progress bar container */}
+                <div className="flex-1">
+                  {/* Progress bar */}
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${
+                        soldPercentage >= 80 ? 'bg-red-500' :
+                        soldPercentage >= 50 ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`}
+                      style={{ width: `${soldPercentage}%` }}
+                    />
+                  </div>
+                  {/* Percentage under progress bar */}
+                  <div className="mt-1 text-xs text-gray-500">
+                    {Math.round(soldPercentage)}%
+                  </div>
+                </div>
+
+                {/* Tickets count */}
+                <div className="flex items-center gap-2 min-w-[120px] whitespace-nowrap">
+                  <span className="text-sm text-gray-900 font-medium">
                     {event.ticketsSold}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-base">
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: 'USD'
-                    }).format(event.totalRevenue)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  </span>
+                  <span className="text-sm text-gray-500">/</span>
+                  <span className="text-sm text-gray-500">
+                    {event.ticketsTotal}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+              }).format(event.totalRevenue)}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
+
+
+
+
+
+    </div>
+
+
+
 
       {/* Ticket Type Analysis with Table */}
       <div className="bg-white rounded-lg shadow-md p-6">
