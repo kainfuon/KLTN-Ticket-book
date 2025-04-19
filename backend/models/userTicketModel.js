@@ -8,8 +8,6 @@ const userTicketSchema = new mongoose.Schema({
     isTraded: { type: Boolean, default: false }, // Vé có được trade không
 }, { timestamps: true });
 
-userTicketSchema.index({ ticketType: 1, eventId: 1, ownerId: 1 }, { unique: true });
-
 const userTicketModel = mongoose.models.userTicket || mongoose.model("userTicket", userTicketSchema);
 
 export default userTicketModel;

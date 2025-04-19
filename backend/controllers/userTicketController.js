@@ -56,7 +56,7 @@ const generateTicketQR = async (req, res) => {
             timestamp
         });
 
-        const qrCode = await QRCode.toDataURL(qrData);
+        const qrCode = await QRCode.toDataURL(JSON.stringify(qrData));
         res.json({ success: true, qrCode });
     } catch (error) {
         console.error(error);

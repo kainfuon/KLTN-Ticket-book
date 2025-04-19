@@ -7,6 +7,7 @@ import ticketRouter from "./routers/ticketRoutes.js"
 import orderRouter from "./routers/orderRoutes.js"
 import userTicketRouter from "./routers/userTicketRouters.js"
 import statsRouter from "./routers/statsRouter.js"
+import aiRouter from "./routers/aiRouter.js"
 
 //import dotenv from "dotenv"
 //import 'dotenv/config'
@@ -36,7 +37,7 @@ app.use("/api/ticket", ticketRouter)
 app.use("/api/order", orderRouter)
 app.use("/api/userTicket", userTicketRouter)
 app.use("/api/stats", statsRouter);  
-
+app.use("/api/ai", aiRouter); // Đường dẫn cho router AI
 app.get("/",(req, res) => {
     res.send("API work")
 })

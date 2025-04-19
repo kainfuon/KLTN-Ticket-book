@@ -17,7 +17,7 @@ import EventAdd from "./components/Admin/EventAdd";
 import EventDetail from "./components/Admin/EventDetail";
 import Statistics from "./components/Admin/Statistics";
 import AdminRoute from "./routes/AdminRoute"; // Import middleware
-
+import ScalpersList from "./components/Admin/ScalpersList";
 
 const App = () => {
     return (
@@ -49,6 +49,7 @@ const App = () => {
                     <Route path="events/edit/:id" element={<EventAdd/>} />
                     <Route path="events/:id" element={<EventDetail />} />
                     <Route path="statistics" element={<Statistics />} />
+                    <Route path="scalpers" element={<ScalpersList />} />
                     {/* Bạn có thể thêm các route khác như customers, tickets, ... */}
                 </Route>
                 </Route>

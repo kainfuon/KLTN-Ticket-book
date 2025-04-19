@@ -31,11 +31,11 @@ const AdminSidebar = () => {
           <span className="hidden md:inline">Statistics</span>
         </Link>
 
-        <Link to="/admin/customers" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+        <Link to="/admin/scalpers" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
           <span className="w-8 h-8 flex items-center justify-center">
             <FaUsers className="text-gray-900 text-2xl" />
           </span>
-          <span className="hidden md:inline">Customers</span>
+          <span className="hidden md:inline">Customers Scalpers</span>
         </Link>
 
         <Link to="/admin/orders" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">

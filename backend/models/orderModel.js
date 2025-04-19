@@ -12,7 +12,6 @@ const orderSchema = new mongoose.Schema({
 
     // Sau khi thanh toán, sẽ lưu riêng danh sách userTicket thực tế
     userTickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "userTicket" }],
-
     fullName: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
