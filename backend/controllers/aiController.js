@@ -1,13 +1,11 @@
 import { spawn } from "child_process";
-import orderModel from "../models/orderModel.js";
-import userModel from "../models/userModel.js"; // Nếu cần lấy thêm info user
 import userTicketModel from "../models/userTicketModel.js";
 
 // Hàm gọi script AI để đánh giá 1 user
 const predictScalperFromStats = (totalTickets, tradesCount) => {
     return new Promise((resolve) => {
         const py = spawn("python", [
-            "backend/ai/detect_scalper.py",
+            "ai/detect_scalper.py",
             "predict",
             totalTickets,
             tradesCount,
@@ -31,39 +29,37 @@ const predictScalperFromStats = (totalTickets, tradesCount) => {
 
 export const getSuspectedScalpers = async (req, res) => {
     try {
-        // Lấy danh sách tất cả user có đơn hàng
-        const users = await orderModel.distinct("userId");
+        const users = await userTicketModel.distinct("ownerId");
 
         const result = [];
 
-        for (let userId of users) {
-            const totalTicketsOrdered = await orderModel.aggregate([
-                { $match: { userId } },
-                { $unwind: "$tickets" },
-                {
-                    $group: {
-                        _id: null,
-                        total: { $sum: "$tickets.quantity" },
+        const promises = users.map(async (userId) => {
+            const [totalTicketsOrdered, tradesCount] = await Promise.all([
+                userTicketModel.aggregate([
+                    { $match: { ownerId: userId } },
+                    {
+                        $group: {
+                            _id: "$ownerId",
+                            total: { $sum: 1 },
+                        },
                     },
-                },
+                ]),
+                getTradeCount(userId),
             ]);
-
-            const tradesCount = await userTicketModel.countDocuments({
-                ownerId: userId,
-                isTraded: true,
-            });
 
             const ticketCount = totalTicketsOrdered[0]?.total || 0;
 
             const isScalper = await predictScalperFromStats(ticketCount, tradesCount);
 
-            result.push({
+            return {
                 userId,
                 totalTickets: ticketCount,
                 trades: tradesCount,
                 isScalper,
-            });
-        }
+            };
+        });
+
+        result.push(...await Promise.all(promises));
 
         res.json({
             success: true,
@@ -73,4 +69,13 @@ export const getSuspectedScalpers = async (req, res) => {
         console.error("Error checking scalpers:", err);
         res.status(500).json({ success: false, message: "Internal server error" });
     }
+};
+
+
+// Cập nhật để đếm số vé trade từ tradeHistory
+const getTradeCount = async (userId) => {
+    const tradeCount = await userTicketModel.countDocuments({
+        "tradeHistory.fromUserId": userId,
+    });
+    return tradeCount;
 };

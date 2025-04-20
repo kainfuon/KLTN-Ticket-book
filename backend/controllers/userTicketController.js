@@ -142,7 +142,14 @@ const tradeTicket = async (req, res) => {
           message: "Ticket not found or you don't own this ticket."
         });
       }
-  
+
+      // Thêm thông tin trade vào lịch sử trade
+      ticket.tradeHistory.push({
+          fromUserId: req.user.userId,
+          toUserId: recipient._id,
+          tradeDate: new Date(),
+      });
+      
       // Update ticket ownership
       ticket.ownerId = recipient._id;
       await ticket.save();

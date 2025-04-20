@@ -6,6 +6,11 @@ const userTicketSchema = new mongoose.Schema({
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true }, // Chủ sở hữu vé
     orderId: { type: mongoose.Schema.Types.ObjectId, ref: "order" }, // ID đơn hàng (nếu có)
     isTraded: { type: Boolean, default: false }, // Vé có được trade không
+    tradeHistory: [{ // Lưu trữ lịch sử trade
+        fromUserId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        toUserId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        tradeDate: { type: Date, default: Date.now },
+    }]
 }, { timestamps: true });
 
 const userTicketModel = mongoose.models.userTicket || mongoose.model("userTicket", userTicketSchema);

@@ -77,5 +77,18 @@ const loginUser = async (req, res) => {
     }
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+     
+      // Lấy danh sách người dùng
+      const users = await userModel.find().select('-password');  // Không trả về mật khẩu
+  
+      // Trả về danh sách người dùng
+      return res.json(users);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+};
 
-export { registerUser, loginUser, getUserInfo };
+export { registerUser, loginUser, getUserInfo, getAllUsers };

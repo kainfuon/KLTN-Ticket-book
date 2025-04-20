@@ -1,38 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { getSuspectedScalpers } from '../../services/aiService';
+import axios from 'axios';
+import { getAllUsers } from '../../services/authService';
 import { toast } from 'sonner';
 
 const ScalpersList = () => {
   const [scalpers, setScalpers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState({}); // Store user details
 
   useEffect(() => {
-    fetchScalpers();
+    fetchData();
   }, []);
 
-  const fetchScalpers = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await getSuspectedScalpers();
-      if (response.success) {
-        setScalpers(response.data);
-        // Fetch user details for each userId
-        const userDetails = {};
-        for (const scalper of response.data) {
-          try {
-            const userResponse = await axios.get(`/api/users/${scalper.userId}`);
-            if (userResponse.data.success) {
-              userDetails[scalper.userId] = userResponse.data.user;
-            }
-          } catch (error) {
-            console.error('Error fetching user details:', error);
-          }
-        }
-        setUsers(userDetails);
+      // Fetch both scalpers and users data in parallel
+      const [scalpersResponse, usersData] = await Promise.all([
+        getSuspectedScalpers(),
+        getAllUsers()
+      ]);
+
+      if (scalpersResponse.success) {
+        // Combine scalper data with user data
+        const scalperData = scalpersResponse.data.map(scalper => {
+          const user = usersData.find(user => user._id === scalper.userId) || {};
+          return {
+            ...scalper,
+            userDetails: user
+          };
+        });
+        
+        setScalpers(scalperData);
+        setUsers(usersData);
       }
     } catch (error) {
-      console.error('Error fetching scalpers:', error);
+      console.error('Error fetching data:', error);
       toast.error('Failed to load scalpers data');
     } finally {
       setLoading(false);
@@ -86,7 +90,6 @@ const ScalpersList = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {scalpers.map((scalper) => {
-              const user = users[scalper.userId] || {};
               const risk = getRiskLevel(scalper.isScalper, scalper.totalTickets, scalper.trades);
               
               return (
@@ -95,19 +98,21 @@ const ScalpersList = () => {
                     <div className="flex items-center">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {user.fullName || 'Unknown User'}
+                          {scalper.userDetails?.name || 'Unknown User'}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {user.email || 'No email'}
+                          {scalper.userDetails?.email || 'No email'}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{scalper.totalTickets}</div>
+                    <div className="text-xs text-gray-500">Total Purchased</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{scalper.trades}</div>
+                    <div className="text-xs text-gray-500">Times Traded</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -120,10 +125,18 @@ const ScalpersList = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => {/* Add action handler */}}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="text-indigo-600 hover:text-indigo-900 mr-2"
                     >
                       View Details
                     </button>
+                    {risk.level === 'High' && (
+                      <button
+                        onClick={() => {/* Add warning handler */}}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Send Warning
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -139,10 +152,14 @@ const ScalpersList = () => {
       </div>
 
       {/* Stats Summary */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-800">Total Monitored Users</h3>
-          <p className="text-3xl font-bold text-indigo-600 mt-2">{scalpers.length}</p>
+          <h3 className="text-lg font-semibold text-gray-800">Total Users</h3>
+          <p className="text-3xl font-bold text-indigo-600 mt-2">{users.length}</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold text-gray-800">Monitored Users</h3>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{scalpers.length}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-800">High Risk Users</h3>
@@ -151,7 +168,7 @@ const ScalpersList = () => {
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-800">Total Suspicious Trades</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Total Trades</h3>
           <p className="text-3xl font-bold text-yellow-600 mt-2">
             {scalpers.reduce((acc, curr) => acc + curr.trades, 0)}
           </p>
@@ -162,3 +179,4 @@ const ScalpersList = () => {
 };
 
 export default ScalpersList;
+
