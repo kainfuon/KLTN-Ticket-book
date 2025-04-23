@@ -9,6 +9,7 @@ import UserProfile from "./components/User/UserProfile";
 import ViewEvent from "./pages/User/ViewEvent";
 import OrderConfirmation from "./components/User/OderComfirmation";
 import VerifyPayment from "./components/User/VerifyPayment";
+import Contact from "./pages/User/Contact";
 
 import Dashboard from "./pages/Admin/Dashboard";
 import AdminDashboard from "./components/Admin/AdminDashboard";
@@ -27,6 +28,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<SignUp/>}/>
                 <Route path="/home" element={<Home />} />
+                <Route path="/contact" element={<Contact/>} />
                 <Route path="/events/:id" element={<ViewEvent />} />
                 <Route path="/place-order" element={<OrderConfirmation />} />
                 <Route path="/verify" element={<VerifyPayment />} />

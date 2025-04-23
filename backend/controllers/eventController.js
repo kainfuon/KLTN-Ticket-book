@@ -21,6 +21,7 @@ const addEvent = async (req, res) => {
             saleStartDate,
             venue,
             status: status || "ongoing",
+            category,
             image: req.file.filename // Chỉ lưu tên file vào database
         });
 
@@ -107,7 +108,7 @@ const updateEvent = async (req, res) => {
       }
   
       // Get update data from request body
-      const { title, description, eventDate, saleStartDate, venue, status } = req.body;
+      const { title, description, eventDate, saleStartDate, venue, category, status } = req.body;
   
       // Prepare update data
       const updateData = {
@@ -116,6 +117,7 @@ const updateEvent = async (req, res) => {
         eventDate: eventDate || existingEvent.eventDate,
         saleStartDate: saleStartDate || existingEvent.saleStartDate,
         venue: venue || existingEvent.venue,
+        category: category || existingEvent.category,
         status: status || existingEvent.status
       };
   

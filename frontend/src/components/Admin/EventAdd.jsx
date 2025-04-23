@@ -17,6 +17,7 @@ const EventAdd = () => {
     eventDate: '',
     saleStartDate: '',
     venue: '',
+    category: '',
     status: 'ongoing',
     image: null
   });
@@ -36,6 +37,7 @@ const EventAdd = () => {
               saleStartDate: new Date(event.saleStartDate).toISOString().slice(0, 16),
               venue: event.venue,
               status: event.status,
+              category: event.category,
               image: event.image
             });
             if (event.image) {
@@ -197,20 +199,42 @@ const EventAdd = () => {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-2">
-                            Status
-                        </label>
-                        <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        >
-                            <option value="ongoing">Ongoing</option>
-                            <option value="completed">Completed</option>
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-lg font-medium text-gray-700 mb-2">
+                              Category
+                          </label>
+                          <select
+                              name="category"
+                              value={formData.category}
+                              onChange={handleInputChange}
+                              className="w-full px-4 py-3 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                          >
+                              <option value="Âm nhạc">Âm nhạc</option>
+                              <option value="Kịch">Kịch</option>
+                              <option value="Workshop">Workshop</option>
+                              <option value="Triển lãm">Triển lãm</option>
+                              <option value="Thể thao">Thể thao</option>
+                              <option value="Dịch vụ">Dịch vụ</option>
+                          </select>
+                        </div>
+                        <div>
+                            <label className="block text-lg font-medium text-gray-700 mb-2">
+                                Status
+                            </label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-3 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                            >
+                                <option value="ongoing">Ongoing</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
                     </div>
+
+                    
 
             {/* Update the image input to make it optional during edit */}
             <div>

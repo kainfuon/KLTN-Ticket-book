@@ -7,6 +7,11 @@ const eventSchema = new mongoose.Schema({
     saleStartDate: { type: Date, required: true },
     venue: { type: String, required: true },
     image: { type: String, required: true },
+    category: { 
+        type: String, 
+        enum: ["Âm nhạc", "Kịch", "Workshop", "Triển lãm", "Thể thao", "Dịch vụ"], 
+        required: true 
+    },
     status: { type: String, enum: ["ongoing", "completed"], default: "ongoing" },
 }, { timestamps: true });
 

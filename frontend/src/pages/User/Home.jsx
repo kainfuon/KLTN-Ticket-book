@@ -1,22 +1,25 @@
-import React from 'react'
-import EventDisplay from '../../components/User/EventDisplay'
-import UserNavbar from '../../components/User/UserNavbar'
+import React from 'react';
+import EventDisplay from '../../components/User/EventDisplay';
+import UserNavbar from '../../components/User/UserNavbar';
+import SearchBar from '../../components/SearchBar';
 
 const Home = () => {
+  const handleSearch = (searchTerm) => {
+    console.log('Searching for:', searchTerm);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <UserNavbar />
-      <div className="bg-gray-100 ">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800">Ticket Book</h2>
-          <p className="text-gray-600 mt-1">Booking events and tickets</p>
+      
+      
+      <div className="bg-white pt-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <EventDisplay />
+          </div>
         </div>
-        <div >
-          <EventDisplay />
-        </div>
-      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
