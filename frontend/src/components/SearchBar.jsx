@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
-const SearchBar = ({ onSearch }) => {
+const SearchBar = ({ onSearch, onFilter, totalEvents }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
@@ -12,15 +12,21 @@ const SearchBar = ({ onSearch }) => {
 
   const categories = [
     { id: '', name: 'All Categories' },
-    { id: 'music', name: 'Music' },
-    { id: 'sports', name: 'Sports' },
-    { id: 'theater', name: 'Theater' },
-    { id: 'cinema', name: 'Cinema' },
-    { id: 'arts', name: 'Arts' },
-    { id: 'others', name: 'Others' }
+    { id: 'Âm nhạc', name: 'Âm nhạc' },
+    { id: 'Kịch', name: 'Kịch' },
+    { id: 'Workshop', name: 'Workshop' },
+    { id: 'Triển lãm', name: 'Triển lãm' },
+    { id: 'Thể thao', name: 'Thể thao' },
+    { id: 'Dịch vụ', name: 'Dịch vụ' }
   ];
 
-  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const saved = localStorage.getItem('recentSearches');
+    if (saved) {
+      setRecentSearches(JSON.parse(saved));
+    }
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -37,34 +43,41 @@ const SearchBar = ({ onSearch }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
+      // Add to recent searches
       setRecentSearches(prev => {
         const newSearches = [searchTerm, ...prev.filter(s => s !== searchTerm)].slice(0, 5);
         localStorage.setItem('recentSearches', JSON.stringify(newSearches));
         return newSearches;
       });
-      onSearch({ term: searchTerm, category: selectedCategory }); // Modified to include category
+      // Call onSearch with just the search term
+      onSearch(searchTerm.trim());
+      setIsSearchFocused(false);
     }
   };
 
-  // Load recent searches from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('recentSearches');
-    if (saved) {
-      setRecentSearches(JSON.parse(saved));
-    }
-  }, []);
+  const handleRecentSearchClick = (search) => {
+    setSearchTerm(search);
+    // Call onSearch with just the search term
+    onSearch(search);
+    setIsSearchFocused(false);
+  };
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
     setIsFilterOpen(false);
-    onSearch({ term: searchTerm, category: categoryId }); // Trigger search with new category
+    onFilter(categoryId);
   };
 
   return (
-    <div className="w-full mb-8"> {/* Changed from max-w-3xl to w-full */}
-      <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
-        Find Your Event
-      </h1>
+    <div className="w-full mb-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Find Your Event
+        </h1>
+        <span className="text-gray-600">
+          {totalEvents} {totalEvents === 1 ? 'Event' : 'Events'} Available
+        </span>
+      </div>
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex gap-2">
           {/* Search Input Container */}
@@ -87,7 +100,10 @@ const SearchBar = ({ onSearch }) => {
               {searchTerm && (
                 <button
                   type="button"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => {
+                    setSearchTerm('');
+                    onSearch('');
+                  }}
                   className="pr-4 hover:text-gray-700 text-gray-400"
                   aria-label="Clear search"
                 >
@@ -98,13 +114,14 @@ const SearchBar = ({ onSearch }) => {
 
             {/* Search Dropdown */}
             {isSearchFocused && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-[56px] mt-1 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && !searchTerm && (
                   <div className="p-2">
                     <div className="flex justify-between items-center">
                       <div className="text-xs text-gray-500 px-3 py-1">Recent Searches</div>
                       <button
+                        type="button"
                         onClick={() => {
                           setRecentSearches([]);
                           localStorage.removeItem('recentSearches');
@@ -118,8 +135,9 @@ const SearchBar = ({ onSearch }) => {
                       {recentSearches.map((search, index) => (
                         <button
                           key={index}
+                          type="button"
                           className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-sm text-gray-700 flex items-center"
-                          onClick={() => setSearchTerm(search)}
+                          onClick={() => handleRecentSearchClick(search)}
                         >
                           <FaSearch className="h-4 w-4 text-gray-400 mr-2" />
                           {search}
@@ -128,41 +146,30 @@ const SearchBar = ({ onSearch }) => {
                     </div>
                   </div>
                 )}
-                
-                {/* Live Search Results */}
+
+                {/* Search Suggestions */}
                 {searchTerm && (
                   <div className="border-t">
                     <div className="p-2">
                       <div className="text-xs text-gray-500 px-3 py-1">
                         Suggestions
                       </div>
-                      <div className="space-y-1">
-                        <button
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-sm text-gray-700 flex items-center"
-                          onClick={() => {
-                            setSearchTerm(searchTerm);
-                            handleSubmit(new Event('submit'));
-                          }}
-                        >
-                          <FaSearch className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="flex-1">Search for "{searchTerm}"</span>
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-sm text-gray-700 flex items-center"
+                        onClick={handleSubmit}
+                      >
+                        <FaSearch className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="flex-1">Search for "{searchTerm}"</span>
+                      </button>
                     </div>
-                  </div>
-                )}
-
-                {/* No Results State */}
-                {searchTerm && (
-                  <div className="p-4 text-center text-gray-500 text-sm">
-                    No results found for "{searchTerm}"
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* Category Filter Button and Dropdown */}
+          {/* Category Filter */}
           <div ref={filterRef} className="relative">
             <button
               type="button"
@@ -181,7 +188,6 @@ const SearchBar = ({ onSearch }) => {
               </span>
             </button>
 
-            {/* Category Dropdown - Updated positioning */}
             {isFilterOpen && (
               <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
                 {categories.map((category) => (
@@ -206,4 +212,5 @@ const SearchBar = ({ onSearch }) => {
     </div>
   );
 };
+
 export default SearchBar;

@@ -77,11 +77,12 @@ const getEventDetail = async (req, res) => {
 // Remove event
 const removeEvent = async (req, res) => {
     try {
-        const event = await eventModel.findById(req.body.id);
+        const { eventId } = req.params;
+        const event = await eventModel.findById(eventId);
         if (event && event.image) {
             fs.unlink(`uploads/${event.image}`, () => {});
         }
-        await eventModel.findByIdAndDelete(req.body.id);
+        await eventModel.findByIdAndDelete(eventId);
         res.json({ success: true, message: "Event Removed" });
     } catch (error) {
         console.log(error);

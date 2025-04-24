@@ -8,6 +8,7 @@ import orderRouter from "./routers/orderRoutes.js"
 import userTicketRouter from "./routers/userTicketRouters.js"
 import statsRouter from "./routers/statsRouter.js"
 import aiRouter from "./routers/aiRouter.js"
+import { updateEventStatus } from "./cron/updateEventStatus.js"
 
 //import dotenv from "dotenv"
 //import 'dotenv/config'
@@ -28,6 +29,7 @@ app.use(cors({
 
 // db connect
 connectDB();
+updateEventStatus();
 
 // api endpoint
 app.use("/api/event", eventRouter)
