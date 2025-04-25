@@ -5,9 +5,24 @@ import { FaPlus, FaCalendarAlt, FaEdit, FaTrash, FaImage } from "react-icons/fa"
 import { toast } from 'sonner';
 
 const EventList = () => {
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Same as EventSales
+  const navigate = useNavigate();
+
+  
+  // Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = events.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(events.length / itemsPerPage);
+
+  // Calculate empty rows needed
+  const emptyRows = itemsPerPage - currentItems.length;
+  const emptyRowsArray = Array(emptyRows).fill(null);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const FallbackImage = () => (
         <div className="h-12 w-12 rounded-full flex items-center justify-center bg-gray-200">
@@ -95,110 +110,153 @@ const EventList = () => {
       {events.length > 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h3 className="text-xl font-bold mb-6">Event List</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
-                    Event Name
-                  </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
-                    Venue
-                  </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-4 text-left text-sm font-medium  uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {events.map((event) => {
-                  const completed = isEventCompleted(event);
-                  
-                  return (
-                    <tr key={event._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
+          <div className="min-h-[400px] flex flex-col">
+            <div className="flex-grow overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 w-[35%]">
+                      EVENT NAME
+                    </th>
+                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 w-[15%]">
+                      DATE
+                    </th>
+                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 w-[20%]">
+                      VENUE
+                    </th>
+                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 w-[15%]">
+                      STATUS
+                    </th>
+                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 w-[15%]">
+                      ACTIONS
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentItems.map((event) => {
+                    const completed = isEventCompleted(event);
+                    return (
+                      <tr key={event._id} className="border-b border-gray-100">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
                             <div className="flex-shrink-0 h-12 w-12">
-                            {event.image ? (
+                              {event.image ? (
                                 <img
-                                className="h-12 w-12 rounded-full object-cover"
-                                src={`http://localhost:4001/images/${event.image}`}
-                                alt={event.title}
-                                onError={(e) => {
+                                  className="h-12 w-12 rounded-full object-cover"
+                                  src={`http://localhost:4001/images/${event.image}`}
+                                  alt={event.title}
+                                  onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.parentElement.appendChild(FallbackImage());
-                                }}
+                                  }}
                                 />
-                            ) : (
+                              ) : (
                                 <FallbackImage />
-                            )}
+                              )}
                             </div>
                             <div className="ml-4">
-                                <div className="text-lg font-medium text-gray-900">
-                                    {event.title}
-                                </div>
+                              <div className="text-base font-medium text-gray-900">
+                                {event.title}
+                              </div>
                             </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base ">
-                        {new Date(event.eventDate).toLocaleDateString('vi-VN')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base ">
-                        {event.venue}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3 py-1.5 text-sm font-semibold rounded-full ${
-                          event.status === 'ongoing'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {event.status === 'ongoing' ? 'Ongoing' : 'Ended'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base font-medium">
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => navigate(`/admin/events/${event._id}`)}
-                            className="text-blue-600 hover:text-blue-900 text-base cursor-pointer"
-                          >
-                            View Details
-                          </button>
-                          <button
-                            onClick={() => handleEdit(event._id)}
-                            className="text-green-600 hover:text-green-800 transition-colors duration-200"
-                            title="Edit event"
-                          >
-                            <FaEdit size={18} />
-                          </button>
-                          {completed ? (
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-base text-gray-500">
+                          {new Date(event.eventDate).toLocaleDateString('vi-VN')}
+                        </td>
+                        <td className="py-4 px-4 text-base text-gray-500">
+                          {event.venue}
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-3 py-1.5 inline-flex text-sm font-semibold rounded-full ${
+                            event.status === 'ongoing'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {event.status === 'ongoing' ? 'Ongoing' : 'Ended'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-4">
                             <button
-                              onClick={() => handleDelete(event)}
-                              className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                              title="Delete event"
+                              onClick={() => navigate(`/admin/events/${event._id}`)}
+                              className="text-blue-600 hover:text-blue-900 text-base"
                             >
-                              <FaTrash size={18} />
+                              View Details
                             </button>
-                          ) : (
-                            <span
-                              className="text-gray-400 cursor-not-allowed"
-                              title="Can only delete completed events"
+                            <button
+                              onClick={() => handleEdit(event._id)}
+                              className="text-green-600 hover:text-green-800"
+                              title="Edit event"
                             >
-                              <FaTrash size={18} />
-                            </span>
-                          )}
-                        </div>
-                      </td>
+                              <FaEdit size={18} />
+                            </button>
+                            {completed ? (
+                              <button
+                                onClick={() => handleDelete(event)}
+                                className="text-red-600 hover:text-red-800"
+                                title="Delete event"
+                              >
+                                <FaTrash size={18} />
+                              </button>
+                            ) : (
+                              <span
+                                className="text-gray-400 cursor-not-allowed"
+                                title="Can only delete completed events"
+                              >
+                                <FaTrash size={18} />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {/* Empty rows to maintain height */}
+                  {emptyRows > 0 && emptyRowsArray.map((_, index) => (
+                    <tr key={`empty-${index}`} className="border-b border-gray-100 h-[72px]">
+                      <td colSpan="5" className="px-4">&nbsp;</td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between pt-4">
+              <div className="text-sm text-gray-500">
+                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, events.length)} of {events.length} entries
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => paginate(index + 1)}
+                    className={`w-8 h-8 flex items-center justify-center rounded ${
+                      currentPage === index + 1
+                        ? 'bg-blue-500 text-white'
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
