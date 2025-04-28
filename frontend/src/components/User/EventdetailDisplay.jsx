@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaMinus, FaPlus, FaRegCalendar, FaMapMarkerAlt  } from 'react-icons/fa';
+import { FaArrowLeft, FaMinus, FaPlus, FaRegCalendar, FaMapMarkerAlt, FaTicketAlt } from 'react-icons/fa';
 import { getEventById } from '../../services/eventService';
 import { getTicketsByEvent } from '../../services/ticketService';
 import OrderModal from './OrderModal';
@@ -60,135 +60,179 @@ const EventdetailDisplay = () => {
     setShowOrderModal(true);
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!event) return <div className="p-6">Event not found</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="p-8 text-center">
+      <div className="text-red-500 text-lg">{error}</div>
+      <button
+        onClick={() => navigate('/home')}
+        className="mt-4 text-blue-600 hover:text-blue-800 flex items-center justify-center gap-2"
+      >
+        <FaArrowLeft /> Return to Home
+      </button>
+    </div>
+  );
+
+  if (!event) return <div className="p-8 text-center text-gray-500">Event not found</div>;
 
   return (
-    <div className="grow p-8 relative">
-      {/* Back Button */}
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => navigate('/home')}
-          className="flex items-center text-blue-600 hover:text-blue-800 text-lg"
-        >
-          <FaArrowLeft className="mr-2" />
-          Back to Events
-        </button>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Event Image */}
-        <div className="w-full">
-          {event.image ? (
-            <img
-              src={`http://localhost:4001/images/${event.image}`}
-              alt={event.title}
-              className="w-full h-[300px] object-cover rounded-lg shadow-sm"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = 'https://via.placeholder.com/300?text=No+Image';
-              }}
-            />
-          ) : (
-            <div className="w-full h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">No Image Available</span>
-            </div>
-          )}
+    <div className="max-w-7xl pt-20 mx-auto px-4 py-8">
+      {/* Navigation Buttons */}
+      <div className="flex justify-between items-center mb-8 ">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center text-gray-600 hover:text-gray-800 text-base bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors group"
+          >
+            <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back
+          </button>
+          
+          
         </div>
 
-        {/* Event Information Box */}
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <h2 className="text-xl font-bold mb-3">{event.title}</h2>
-          <div className="space-y-3">
-            <div className="flex items-center text-gray-700">
-              <FaRegCalendar className="mr-2" />
-              <span>
-                {event.eventDate ? 
-                  `${event.time || '18:30-21:00'}, ${new Date(event.eventDate).toLocaleDateString('vi-VN')}` : 
-                  'Not set'
-                }
-              </span>
+        {/* Event Status */}
+        <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+          event?.status === 'ongoing'
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {event?.status === 'ongoing' ? 'Ongoing' : 'Ended'}
+        </span>
+      </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Event Image and Details */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Event Image */}
+          <div className="relative rounded-xl overflow-hidden bg-gray-100">
+            {event?.image ? (
+              <img
+                src={`http://localhost:4001/images/${event.image}`}
+                alt={event.title}
+                className="w-full h-[400px] object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/400?text=No+Image';
+                }}
+              />
+            ) : (
+              <div className="w-full h-[400px] flex items-center justify-center bg-gray-200">
+                <span className="text-gray-500">No Image Available</span>
+              </div>
+            )}
+          </div>
+
+          {/* Event Information */}
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold text-gray-900">{event?.title}</h1>
+              
+              <div className="flex flex-wrap gap-4 text-gray-600">
+                <div className="flex items-center bg-blue-50 px-4 py-2 rounded-lg">
+                  <FaRegCalendar className="mr-2 text-blue-500" />
+                  <span>
+                    {event?.eventDate
+                      ? `${event.time || '18:30-21:00'}, ${new Date(event.eventDate).toLocaleDateString('vi-VN')}`
+                      : 'Date not set'}
+                  </span>
+                </div>
+                <div className="flex items-center bg-blue-50 px-4 py-2 rounded-lg">
+                  <FaMapMarkerAlt className="mr-2 text-blue-500" />
+                  <span>{event?.venue || 'No venue specified'}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-start text-gray-700">
-              <FaMapMarkerAlt className="mr-2 mt-1 flex-shrink-0" />
-              <span>{event.venue || 'No venue specified'}</span>
+
+            <div className="border-t pt-6">
+              <h2 className="text-xl font-semibold mb-4">About This Event</h2>
+              <p className="text-gray-600 whitespace-pre-line leading-relaxed">
+                {event?.description || 'No description available'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Event Description */}
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            Chi tiết:
-          </h3>
-          <p className="text-gray-600 whitespace-pre-line">
-            {event.description || 'No description available'}
-          </p>
-        </div>
+        {/* Right Column - Ticket Selection */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 sticky top-6">
+            <div className="flex items-center gap-2 mb-6">
+              <FaTicketAlt className="text-blue-500" />
+              <h2 className="text-xl font-semibold">Select Tickets</h2>
+            </div>
 
-        {/* Ticket Booking Section */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Hạng vé</h3>
-        <div className="space-y-4">
-          {tickets.map((ticket) => (
-            (showOrderModal && !selectedTickets[ticket._id]) ? null : (
-              <div
-                key={ticket._id}
-                className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm"
-              >
-                <div>
-                  <h4 className="font-medium">{ticket.type}</h4>
-                  <p className="text-gray-600">{ticket.price.toLocaleString()}$</p>
+            <div className="space-y-4">
+              {tickets.map((ticket) => (
+                (!showOrderModal || selectedTickets[ticket._id]) && (
+                  <div
+                    key={ticket._id}
+                    className="p-4 border rounded-lg hover:border-blue-200 transition-colors"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-medium text-gray-900">{ticket.type}</h3>
+                        <p className="text-lg font-semibold text-blue-600">
+                          ${ticket.price.toLocaleString()}
+                        </p>
+                      </div>
+                      {!showOrderModal && (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleQuantityChange(ticket._id, -1)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                              selectedTickets[ticket._id]
+                                ? 'bg-blue-100 hover:bg-blue-200 text-blue-600'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                            disabled={!selectedTickets[ticket._id]}
+                          >
+                            <FaMinus className="text-sm" />
+                          </button>
+                          <span className="w-8 text-center font-medium">
+                            {selectedTickets[ticket._id] || 0}
+                          </span>
+                          <button
+                            onClick={() => handleQuantityChange(ticket._id, 1)}
+                            className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors"
+                          >
+                            <FaPlus className="text-sm" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              ))}
+
+              {/* Total and Continue Button */}
+              <div className="mt-6 space-y-4">
+                <div className="flex justify-between items-center py-4 border-t">
+                  <span className="text-lg font-semibold">Total</span>
+                  <span className="text-xl font-bold text-blue-600">
+                    ${calculateTotal().toLocaleString()}
+                  </span>
                 </div>
                 {!showOrderModal && (
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleQuantityChange(ticket._id, -1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                      disabled={!selectedTickets[ticket._id]}
-                    >
-                      <FaMinus className="text-gray-600" />
-                    </button>
-                    <span className="w-8 text-center">
-                      {selectedTickets[ticket._id] || 0}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange(ticket._id, 1)}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                    >
-                      <FaPlus className="text-gray-600" />
-                    </button>
-                  </div>
-                )}
-                {showOrderModal && (
-                  <div className="text-right">
-                    <span>{selectedTickets[ticket._id]}x</span>
-                  </div>
+                  <button
+                    onClick={handleContinue}
+                    disabled={calculateTotal() === 0}
+                    className={`w-full py-3 rounded-lg text-lg font-medium transition-all ${
+                      calculateTotal() === 0
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white transform hover:-translate-y-0.5'
+                    }`}
+                  >
+                    Continue to Order
+                  </button>
                 )}
               </div>
-            )
-          ))}
-          {/* Total and Book Button */}
-          <div className="mt-6 space-y-4">
-            <div className="flex justify-between items-center text-lg font-semibold">
-              <span>Tổng:</span>
-              <span>{calculateTotal().toLocaleString()}$</span>
             </div>
-            {!showOrderModal && (
-              <button
-                onClick={handleContinue}
-                disabled={calculateTotal() === 0}
-                className={`w-full py-3 rounded-lg transition-colors ${
-                  calculateTotal() === 0
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-              >
-                Tiếp tục
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -202,9 +246,9 @@ const EventdetailDisplay = () => {
         tickets={tickets}
         total={calculateTotal()}
       />
-      </div>
     </div>
   );
 };
+
 
 export default EventdetailDisplay;

@@ -67,15 +67,15 @@ const EventCard = ({ event }) => {
           </span>
         </div>
 
-        {/* Event Description */}
-        {description && (
-          <p className="text-gray-600 text-sm line-clamp-2 mb-2">
-            {description}
+        {/* Event Description - Always 2 lines */}
+        <div className="h-[40px] mb-2"> {/* Fixed height for 2 lines */}
+          <p className="text-gray-600 text-sm line-clamp-2">
+            {description || 'No description available'}
           </p>
-        )}
+        </div>
 
         {/* Event Details */}
-        <div className="flex justify-between items-end mt-2">
+        <div className="flex justify-between items-end">
           <div className="text-gray-500">
             <div className="flex items-center gap-2">
               <FaCalendarAlt className="mr-1" />
@@ -83,7 +83,7 @@ const EventCard = ({ event }) => {
             </div>
             <div className="flex items-center gap-2">
               <FaMapMarkerAlt className="mr-1" />
-              <span>{venue || 'No venue specified'}</span>
+              <span className="line-clamp-1">{venue || 'No venue specified'}</span>
             </div>
           </div>
 
