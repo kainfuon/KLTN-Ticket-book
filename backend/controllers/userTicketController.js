@@ -64,39 +64,6 @@ const generateTicketQR = async (req, res) => {
     }
 };
 
-// Trade ticket
-// const tradeTicket = async (req, res) => {
-//     try {
-//         const { ticketId, recipientId, password } = req.body;
-//         const userId = req.user.userId;
-
-//         if (!ticketId || !recipientId || !password) {
-//             return res.status(400).json({ success: false, message: "Missing required fields." });
-//         }
-
-//         // Lấy user + password
-//         const user = await userModel.findById(userId).select("+password");
-//         if (!user || !(await user.comparePassword(password))) {
-//             return res.status(401).json({ success: false, message: "Invalid password." });
-//         }
-
-//         // Tìm vé & đổi chủ sở hữu
-//         const ticket = await userTicketModel.findOne({ _id: ticketId, ownerId: userId });
-//         if (!ticket) {
-//             return res.status(404).json({ success: false, message: "Ticket not found or not owned by you." });
-//         }
-
-//         ticket.ownerId = recipientId;
-//         ticket.isTraded = true;
-//         await ticket.save();
-
-//         res.json({ success: true, message: "Ticket traded successfully." });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ success: false, message: "Server error." });
-//     }
-// };
-// Trade ticket to another user
 const tradeTicket = async (req, res) => {
     try {
       const { ticketId } = req.params;
@@ -112,6 +79,11 @@ const tradeTicket = async (req, res) => {
           message: "Invalid password."
         });
       }
+
+      console.log("Provided password:", password);
+console.log("User hash:", currentUser.password);
+console.log("Password valid:", isPasswordValid);
+
   
       // Find recipient by email
       const recipient = await userModel.findOne({ email: recipientEmail });

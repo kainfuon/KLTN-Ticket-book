@@ -27,6 +27,10 @@ const placeOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: "Event not found." });
         }
 
+        if (event.status !== "ongoing") {
+            return res.status(400).json({ success: false, message: "Event is not active." });
+        }
+
         let totalPrice = 0;
         let ticketItems = [];
         let lineItems = [];

@@ -5,11 +5,13 @@ import path from "path";
 // add event
 const addEvent = async (req, res) => {
     try {
+      console.log("req.file", req.file);
+      console.log("req.body", req.body);
         if (!req.file) {
             return res.status(400).json({ success: false, message: "No image uploaded." });
         }
 
-        const { title, description, eventDate, saleStartDate, venue, status } = req.body;
+        const { title, description, eventDate, saleStartDate, venue, category, status } = req.body;
         const tempImagePath = req.file.path; // Ảnh đang nằm trong temp_uploads/
         const finalImagePath = path.join("uploads", req.file.filename); // Đích đến
 
@@ -35,6 +37,8 @@ const addEvent = async (req, res) => {
         res.json({ success: true, message: "Event added successfully!", data: event });
 
     } catch (error) {
+       
+
         console.log(error);
 
         // Nếu lỗi xảy ra, xóa ảnh trong temp_uploads

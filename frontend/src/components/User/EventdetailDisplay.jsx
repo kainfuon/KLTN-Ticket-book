@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaMinus, FaPlus, FaRegCalendar, FaMapMarkerAlt, FaTicketAlt } from 'react-icons/fa';
 import { getEventById } from '../../services/eventService';
 import { getTicketsByEvent } from '../../services/ticketService';
+import { toast } from 'sonner';
 import OrderModal from './OrderModal';
 
 const EventdetailDisplay = () => {
@@ -14,6 +15,7 @@ const EventdetailDisplay = () => {
   const [error, setError] = useState('');
   const [selectedTickets, setSelectedTickets] = useState({});
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [ticketAvailability, setTicketAvailability] = useState({});
 
   useEffect(() => {
     fetchEventData();
@@ -30,9 +32,18 @@ const EventdetailDisplay = () => {
         setError('Failed to load event');
         return;
       }
+
       // Get tickets
       const ticketsResponse = await getTicketsByEvent(id);
-      setTickets(ticketsResponse || []);
+      if (ticketsResponse) {
+        setTickets(ticketsResponse);
+        // Check ticket availability
+        const availability = {};
+        ticketsResponse.forEach(ticket => {
+          availability[ticket._id] = ticket.availableSeats > 0;
+        });
+        setTicketAvailability(availability);
+      }
     } catch (err) {
       console.error('Error:', err);
       setError('Failed to load data');
@@ -42,10 +53,21 @@ const EventdetailDisplay = () => {
   };
 
   const handleQuantityChange = (ticketId, change) => {
-    if (!showOrderModal) { // Only allow changes when modal is not shown
+    if (!showOrderModal) {
+      const ticket = tickets.find(t => t._id === ticketId);
+      const currentQuantity = selectedTickets[ticketId] || 0;
+      
+      // Check if increasing quantity is possible
+      if (change > 0) {
+        if (currentQuantity >= ticket.availableSeats) {
+          toast.error('No more tickets available');
+          return;
+        }
+      }
+      
       setSelectedTickets(prev => ({
         ...prev,
-        [ticketId]: Math.max(0, (prev[ticketId] || 0) + change)
+        [ticketId]: Math.max(0, Math.min((prev[ticketId] || 0) + change, ticket.availableSeats))
       }));
     }
   };
@@ -57,6 +79,17 @@ const EventdetailDisplay = () => {
   };
 
   const handleContinue = () => {
+    if (event?.status === 'completed') {
+      toast.error('This event has ended');
+      return;
+    }
+    
+    const hasSelectedTickets = Object.values(selectedTickets).some(quantity => quantity > 0);
+    if (!hasSelectedTickets) {
+      toast.error('Please select at least one ticket');
+      return;
+    }
+
     setShowOrderModal(true);
   };
 
@@ -65,7 +98,7 @@ const EventdetailDisplay = () => {
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   );
-  
+
   if (error) return (
     <div className="p-8 text-center">
       <div className="text-red-500 text-lg">{error}</div>
@@ -83,7 +116,7 @@ const EventdetailDisplay = () => {
   return (
     <div className="max-w-7xl pt-20 mx-auto px-4 py-8">
       {/* Navigation Buttons */}
-      <div className="flex justify-between items-center mb-8 ">
+      <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
@@ -92,17 +125,14 @@ const EventdetailDisplay = () => {
             <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
             Back
           </button>
-          
-          
         </div>
-
         {/* Event Status */}
         <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${
           event?.status === 'ongoing'
             ? 'bg-green-100 text-green-800'
             : 'bg-red-100 text-red-800'
         }`}>
-          {event?.status === 'ongoing' ? 'Ongoing' : 'Ended'}
+          {event?.status === 'ongoing' ? 'Ongoing' : 'Completed'}
         </span>
       </div>
 
@@ -133,7 +163,6 @@ const EventdetailDisplay = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
             <div className="space-y-4">
               <h1 className="text-3xl font-bold text-gray-900">{event?.title}</h1>
-              
               <div className="flex flex-wrap gap-4 text-gray-600">
                 <div className="flex items-center bg-blue-50 px-4 py-2 rounded-lg">
                   <FaRegCalendar className="mr-2 text-blue-500" />
@@ -149,7 +178,6 @@ const EventdetailDisplay = () => {
                 </div>
               </div>
             </div>
-
             <div className="border-t pt-6">
               <h2 className="text-xl font-semibold mb-4">About This Event</h2>
               <p className="text-gray-600 whitespace-pre-line leading-relaxed">
@@ -166,7 +194,6 @@ const EventdetailDisplay = () => {
               <FaTicketAlt className="text-blue-500" />
               <h2 className="text-xl font-semibold">Select Tickets</h2>
             </div>
-
             <div className="space-y-4">
               {tickets.map((ticket) => (
                 (!showOrderModal || selectedTickets[ticket._id]) && (
@@ -177,9 +204,16 @@ const EventdetailDisplay = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-medium text-gray-900">{ticket.type}</h3>
-                        <p className="text-lg font-semibold text-blue-600">
-                          ${ticket.price.toLocaleString()}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-lg font-semibold text-blue-600">
+                            ${ticket.price.toLocaleString()}
+                          </p>
+                          {ticket.availableSeats === 0 && (
+                            <span className="text-sm text-red-500 font-medium">
+                              • Sold out
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {!showOrderModal && (
                         <div className="flex items-center gap-3">
@@ -191,6 +225,7 @@ const EventdetailDisplay = () => {
                                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             }`}
                             disabled={!selectedTickets[ticket._id]}
+                            title="Decrease quantity"
                           >
                             <FaMinus className="text-sm" />
                           </button>
@@ -199,13 +234,37 @@ const EventdetailDisplay = () => {
                           </span>
                           <button
                             onClick={() => handleQuantityChange(ticket._id, 1)}
-                            className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 transition-colors"
+                            disabled={
+                              event?.status === 'completed' || 
+                              ticket.availableSeats === 0 || 
+                              (selectedTickets[ticket._id] || 0) >= ticket.availableSeats
+                            }
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                              event?.status === 'completed' || ticket.availableSeats === 0 || 
+                              (selectedTickets[ticket._id] || 0) >= ticket.availableSeats
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-100 hover:bg-blue-200 text-blue-600'
+                            }`}
+                            title={
+                              event?.status === 'completed'
+                                ? 'Event has completed'
+                                : ticket.availableSeats === 0
+                                ? 'Sold out'
+                                : (selectedTickets[ticket._id] || 0) >= ticket.availableSeats
+                                ? 'Maximum tickets selected'
+                                : 'Add ticket'
+                            }
                           >
                             <FaPlus className="text-sm" />
                           </button>
                         </div>
                       )}
                     </div>
+                    {event?.status === 'completed' && (
+                      <p className="text-sm text-red-500 mt-2">
+                        This event has completed. Tickets are no longer available.
+                      </p>
+                    )}
                   </div>
                 )
               ))}
@@ -221,14 +280,14 @@ const EventdetailDisplay = () => {
                 {!showOrderModal && (
                   <button
                     onClick={handleContinue}
-                    disabled={calculateTotal() === 0}
+                    disabled={calculateTotal() === 0 || event?.status === 'completed'}
                     className={`w-full py-3 rounded-lg text-lg font-medium transition-all ${
-                      calculateTotal() === 0
+                      calculateTotal() === 0 || event?.status === 'completed'
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700 text-white transform hover:-translate-y-0.5'
                     }`}
                   >
-                    Continue to Order
+                    {event?.status === 'completed' ? 'Event Has Completed' : 'Continue to Order'}
                   </button>
                 )}
               </div>
@@ -249,6 +308,5 @@ const EventdetailDisplay = () => {
     </div>
   );
 };
-
 
 export default EventdetailDisplay;

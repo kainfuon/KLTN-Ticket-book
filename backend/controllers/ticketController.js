@@ -43,6 +43,7 @@ const updateTicket = async (req, res) => {
     try {
         const { ticketId } = req.params;
         const { price, totalSeats } = req.body;
+        console.log("🎯 Received ticketId:", req.params.ticketId);
 
         // Find and update ticket
         const updatedTicket = await ticketModel.findByIdAndUpdate(

@@ -41,3 +41,5 @@ if __name__ == "__main__":
             trades = sys.argv[3]
             result = predict_scalper(num_tickets, trades)
             print(result)  # In ra kết quả 0 hoặc 1 cho backend đọc
+
+# .\venv\Scripts\Activate
