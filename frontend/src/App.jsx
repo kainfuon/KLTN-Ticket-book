@@ -19,6 +19,7 @@ import EventDetail from "./components/Admin/EventDetail";
 import Statistics from "./components/Admin/Statistics";
 import AdminRoute from "./routes/AdminRoute";
 import ScalpersList from "./components/Admin/ScalpersList";
+import PendingTradesPage from "./pages/User/PendingTradesPage";
 
 // Layout wrapper component to handle footer display
 const AppLayout = ({ children }) => {
@@ -62,7 +63,7 @@ const App = () => {
           {/* User Dashboard Routes */}
           <Route path="/user" element={<UserDashboard />}>
             <Route path="tickets" element={<TicketDisplay />} />
-            <Route path="trade" element={<TradeTicket />} />
+            <Route path="trade" element={<PendingTradesPage/>}/>
             <Route path="profile" element={<UserProfile />} />
             <Route index element={<TicketDisplay />} />
           </Route>

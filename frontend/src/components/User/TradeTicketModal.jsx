@@ -1,264 +1,169 @@
 import React, { useState } from 'react';
-import { FaTimes, FaExchangeAlt, FaInfoCircle, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { tradeTicket } from '../../services/userticketService';
-import { format } from 'date-fns';
+import { FaExchangeAlt, FaEnvelope, FaLock, FaTimes, FaSpinner } from 'react-icons/fa';
+import { toast } from 'sonner';
 
 const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
-  const [formData, setFormData] = useState({
-    recipientEmail: '',
-    password: ''
-  });
+  const [step, setStep] = useState(1); // 1: Initial, 2: Confirm, 3: Processing
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [confirmStep, setConfirmStep] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user types
-    if (error) setError('');
-  };
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
-  };
-
-  const validateForm = () => {
-    if (!formData.recipientEmail.trim()) {
-      setError('Recipient email is required');
-      return false;
-    }
-    
-    if (!validateEmail(formData.recipientEmail)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-
-    if (!formData.password) {
-      setError('Password is required');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    if (!confirmStep) {
-      setConfirmStep(true);
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
+  const handleTrade = async () => {
     try {
-      const result = await tradeTicket(ticket._id, formData);
-      if (result.success) {
+      setLoading(true);
+      setError('');
+
+      // Validate inputs
+      if (!recipientEmail || !password) {
+        setError('Please fill in all fields');
+        return;
+      }
+
+      // Call API to initiate trade
+      const response = await fetch(`/api/tickets/${ticket._id}/trade`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientEmail,
+          password
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      // Show success message
+      toast.success('Trade initiated successfully!');
         onTradeComplete();
         onClose();
-      } else {
-        setError(result.message);
-        setConfirmStep(false);
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to trade ticket');
-      setConfirmStep(false);
+    } catch (error) {
+      setError(error.message || 'Failed to initiate trade');
+      toast.error(error.message || 'Failed to initiate trade');
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const renderTicketDetails = () => (
-    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-semibold text-gray-800">
-            {ticket.eventId.title}
-          </h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {format(new Date(ticket.eventId.eventDate), 'EEEE, MMMM d, yyyy')}
-          </p>
-        </div>
-        <div className="text-right">
-          <span className="text-sm font-medium text-gray-600">
-            Ticket Type
-          </span>
-          <p className="text-sm font-semibold text-gray-800">
-            {ticket.ticketType.type}
-          </p>
-        </div>
-      </div>
-      <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Venue:</span>
-          <span className="text-gray-800">{ticket.eventId.venue}</span>
-        </div>
-        <div className="flex justify-between text-sm mt-1">
-          <span className="text-gray-600">Time:</span>
-          <span className="text-gray-800">
-            {format(new Date(ticket.eventId.eventDate), 'HH:mm')}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderConfirmationStep = () => (
-    <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200 mb-6">
-      <h4 className="font-semibold text-yellow-800 flex items-center">
-        <FaInfoCircle className="mr-2" />
-        Confirm Trade Details
-      </h4>
-      <div className="mt-3 space-y-2 text-sm text-yellow-700">
-        <p>• Recipient Email: {formData.recipientEmail}</p>
-        <p>• Event: {ticket.eventId.title}</p>
-        <p>• Ticket Type: {ticket.ticketType.type}</p>
-        <p className="font-medium mt-3">
-          This action cannot be undone. Please confirm your password to proceed.
-        </p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md mx-4 shadow-xl">
-        {/* Modal Header */}
-        <div className="bg-gray-800 text-white p-4 rounded-t-lg flex justify-between items-center">
-          <div className="flex items-center">
-            <FaExchangeAlt className="mr-2" />
-            <h2 className="text-xl font-semibold">Trade Ticket</h2>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center gap-3">
+            <FaExchangeAlt className="text-blue-600 text-xl" />
+            <h2 className="text-xl font-semibold text-gray-800">Trade Ticket</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <FaTimes />
+            <FaTimes className="text-xl" />
           </button>
         </div>
 
-        {/* Modal Content */}
-        <form onSubmit={handleSubmit} className="p-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg border border-red-200 flex items-start">
-              <FaInfoCircle className="mr-2 mt-0.5 flex-shrink-0" />
-              <span>{error}</span>
+        {/* Content */}
+        <div className="p-6">
+          {/* Ticket Info */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-2">
+              {ticket.eventId.title}
+            </h3>
+            <div className="text-sm text-gray-600">
+              <p>Ticket Type: {ticket.ticketType.type}</p>
+              <p>Price: ${ticket.ticketType.price.toLocaleString()}</p>
             </div>
-          )}
-
-          {confirmStep ? renderConfirmationStep() : renderTicketDetails()}
+          </div>
 
           {/* Trade Form */}
           <div className="space-y-4">
+            {/* Recipient Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recipient Email *
+                Recipient Email
               </label>
               <div className="relative">
+                <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
-                  name="recipientEmail"
-                  value={formData.recipientEmail}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                  placeholder="Enter the recipient's email address"
-                  disabled={confirmStep}
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  placeholder="Enter recipient's email"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                
               </div>
             </div>
 
+            {/* Password Confirmation */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Your Password *
+                Confirm Your Password
               </label>
               <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
-                  required
-                  placeholder="Enter your password to confirm"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? (
-                    <FaEyeSlash className="w-5 h-5" />
-                  ) : (
-                    <FaEye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
             </div>
-
-            {!confirmStep && (
-              <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                <p className="flex items-start">
-                  <FaInfoCircle className="mr-2 mt-0.5 flex-shrink-0" />
-                  This action will permanently transfer the ticket to the recipient.
-                  Make sure you have entered the correct email address.
-                </p>
               </div>
-            )}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (confirmStep) {
-                  setConfirmStep(false);
-                } else {
-                  onClose();
-                }
-              }}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              {confirmStep ? 'Back' : 'Cancel'}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`px-4 py-2 rounded-lg flex items-center ${
-                loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : confirmStep
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } text-white transition-colors`}
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                  Processing...
-                </>
-              ) : confirmStep ? (
-                'Confirm Trade'
-              ) : (
-                'Continue'
-              )}
-            </button>
+            {/* Error Message */}
+            {error && (
+              <div className="text-red-500 text-sm">
+                {error}
           </div>
-        </form>
+              )}
+
+            {/* Trade Information */}
+            <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
+              <p className="font-medium mb-2">Important Information:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>The recipient will have 24 hours to accept the trade</li>
+                <li>They will need to pay the ticket price to complete the trade</li>
+                <li>You can cancel the trade before it's accepted</li>
+              </ul>
+          </div>
+          </div>
+      </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleTrade}
+            disabled={loading}
+            className={`px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2
+              ${loading 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:bg-blue-700 transition-colors'
+              }`}
+          >
+            {loading ? (
+              <>
+                <FaSpinner className="animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <FaExchangeAlt />
+                Initiate Trade
+              </>
+            )}
+          </button>
+    </div>
       </div>
     </div>
   );
