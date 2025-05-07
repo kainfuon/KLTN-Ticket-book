@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { FaExchangeAlt, FaEnvelope, FaLock, FaTimes, FaSpinner } from 'react-icons/fa';
 import { toast } from 'sonner';
+import { initiateTrade } from '../../services/userticketService'; // Import the service
 
 const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
-  const [step, setStep] = useState(1); // 1: Initial, 2: Confirm, 3: Processing
   const [recipientEmail, setRecipientEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,30 +20,24 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
         return;
       }
 
-      // Call API to initiate trade
-      const response = await fetch(`/api/tickets/${ticket._id}/trade`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipientEmail,
-          password
-        })
-      });
+      // Call API to initiate trade using the service
+      const response = await initiateTrade(ticket._id, recipientEmail, password);
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message);
-      }
-
-      // Show success message
-      toast.success('Trade initiated successfully!');
-        onTradeComplete();
+      if (response.success) {
+        toast.success(response.message || 'Trade initiated successfully!');
+        onTradeComplete(response.data); // Pass updated ticket data if available
         onClose();
-    } catch (error) {
-      setError(error.message || 'Failed to initiate trade');
-      toast.error(error.message || 'Failed to initiate trade');
+      } else {
+        // Handle specific error messages from backend
+        setError(response.message || 'Failed to initiate trade');
+        toast.error(response.message || 'Failed to initiate trade');
+      }
+    } catch (err) {
+      // Handle network errors or other unexpected errors
+      const errorMessage = err.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error('Trade initiation error:', err);
     } finally {
       setLoading(false);
     }
@@ -71,11 +65,11 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
           {/* Ticket Info */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-medium text-gray-900 mb-2">
-              {ticket.eventId.title}
+              {ticket.eventId?.title || 'Event Title Missing'}
             </h3>
             <div className="text-sm text-gray-600">
-              <p>Ticket Type: {ticket.ticketType.type}</p>
-              <p>Price: ${ticket.ticketType.price.toLocaleString()}</p>
+              <p>Ticket Type: {ticket.ticketType?.type || 'Type Missing'}</p>
+              <p>Price: ${ticket.ticketType?.price?.toLocaleString() || 'N/A'}</p>
             </div>
           </div>
 
@@ -91,7 +85,7 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
                 <input
                   type="email"
                   value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  onChange={(e) => { setRecipientEmail(e.target.value); setError(''); }}
                   placeholder="Enter recipient's email"
                   className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -108,48 +102,48 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setError(''); }}
                   placeholder="Enter your password"
                   className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-            </div>
               </div>
+            </div>
 
             {/* Error Message */}
             {error && (
-              <div className="text-red-500 text-sm">
+              <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg">
                 {error}
-          </div>
-              )}
+              </div>
+            )}
 
             {/* Trade Information */}
             <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
               <p className="font-medium mb-2">Important Information:</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>The recipient will have 24 hours to accept the trade</li>
-                <li>They will need to pay the ticket price to complete the trade</li>
-                <li>You can cancel the trade before it's accepted</li>
+                <li>The recipient will have 24 hours to accept the trade.</li>
+                <li>They will need to pay the ticket price to complete the trade.</li>
+                <li>You can cancel the trade before it's accepted.</li>
               </ul>
+            </div>
           </div>
-          </div>
-      </div>
+        </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors rounded-md border"
           >
             Cancel
           </button>
           <button
             onClick={handleTrade}
-            disabled={loading}
+            disabled={loading || !recipientEmail || !password}
             className={`px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2
-              ${loading 
-                ? 'opacity-50 cursor-not-allowed' 
+              ${(loading || !recipientEmail || !password)
+                ? 'opacity-50 cursor-not-allowed'
                 : 'hover:bg-blue-700 transition-colors'
-              }`}
+            }`}
           >
             {loading ? (
               <>
@@ -163,7 +157,7 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
               </>
             )}
           </button>
-    </div>
+        </div>
       </div>
     </div>
   );

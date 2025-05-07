@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4001/api/tickets'; // Adjust if your base URL is different
+const API_URL = 'http://localhost:4001/api/userTicket'; // Adjust if your base URL is different
 
 // Helper to get the token
 const getToken = () => localStorage.getItem('token');
@@ -61,21 +61,6 @@ export const cancelTrade = async (ticketId) => {
   }
 };
 
-// Note: confirmTrade is likely called from a different part of your app (e.g., after Stripe redirect)
-// If you need it here for some reason, it would look like this:
-// export const confirmTradeAfterPayment = async (ticketId) => {
-//   try {
-//     const token = getToken();
-//     const response = await axios.post(`${API_URL}/confirm-trade`, { ticketId }, {
-//       headers: { Authorization: `Bearer ${token}` },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error('Error confirming trade:', error.response?.data?.message || error.message);
-//     throw new Error(error.response?.data?.message || 'Failed to confirm trade');
-//   }
-// };
-
 // Get ticket by ID
 export const getTicketById = async (ticketId) => {
   try {
@@ -92,27 +77,48 @@ export const getTicketById = async (ticketId) => {
 };
 
 // Trade ticket
-export const tradeTicket = async (ticketId, tradeData) => {
+export const initiateTrade = async (ticketId, recipientEmail, password) => {
   try {
     const token = localStorage.getItem('token');
     const response = await axios.post(
-      `${API_URL}/${ticketId}/trade`,
-      {
-        recipientEmail: tradeData.recipientEmail,
-        password: tradeData.password
-      },
+      `${API_URL}/${ticketId}/trade`, // Make sure this matches your backend route
+      { recipientEmail, password }, // Send recipientEmail and password
       {
         headers: {
-          Authorization: `Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         }
       }
     );
     return response.data;
   } catch (error) {
-    if (error.response?.data) {
+    if (error.response && error.response.data) {
       throw error.response.data;
+    } else {
+      throw { success: false, message: error.message || 'Network error' };
     }
-    throw error.response?.data || { success: false, message: "Failed to trade ticket" };
+  }
+};
+
+export const confirmTrade = async (ticketId) => {
+  try {
+    const token = localStorage.getItem('token');
+    // The backend expects ticketId in the request body
+    const response = await axios.post(
+      `${API_URL}/confirm-trade`, // Adjust if your backend route is different
+      { ticketId }, // Send ticketId in the body
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    } else {
+      throw { success: false, message: error.message || 'Network error' };
+    }
   }
 };
 
