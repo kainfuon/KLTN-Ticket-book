@@ -10,7 +10,10 @@ const CLIENT_URL = "http://localhost:5173";
 const getUserTickets = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const tickets = await userTicketModel.find({ ownerId: userId })
+        const tickets = await userTicketModel.find({
+          ownerId: userId,
+          isPendingTrade: false  // Thêm điều kiện này để không lấy vé đang pending trade
+        })
             .populate("ticketType", "type price")
             .populate("eventId", "title eventDate venue image");
 

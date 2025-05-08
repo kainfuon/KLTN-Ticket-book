@@ -14,7 +14,7 @@ const TradeConfirmationPage = () => {
 
   // Get parameters from URL - matching your screenshot for /verify-trade
   const paymentSuccess = searchParams.get("success");
-  const ticketId = searchParams.get("ticketid"); // Changed from orderId to ticketid
+  const ticketId = searchParams.get("ticketId"); // Changed from orderId to ticketid
 
   useEffect(() => {
     const handleTradeConfirmation = async () => {

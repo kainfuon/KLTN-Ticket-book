@@ -24,3 +24,25 @@ export const getAllUsers = async () => {
       throw error.response?.data || error;
     }
 };
+
+export const getUserProfile = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error("No authentication token found.");
+    }
+    const response = await axios.get(`${API_URL}/info`, { // Your actual API endpoint
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (response.data && response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "Failed to fetch user profile.");
+    }
+  } catch (error) {
+    console.error("Error in getUserProfile service:", error);
+    throw error; // Re-throw to be caught by the component
+  }
+};

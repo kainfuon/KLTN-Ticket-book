@@ -118,7 +118,7 @@ const PendingTradesPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Pending Ticket Trades</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Vé đang chờ</h1>
       {pendingTrades.map((trade) => {
         const event = trade.eventId;
         const ticketType = trade.ticketType;
@@ -134,7 +134,7 @@ const PendingTradesPage = () => {
               <div className="flex flex-col md:flex-row justify-between items-start mb-4">
                 <div>
                   <h2 className="text-2xl font-semibold text-blue-700 mb-1">{event.title}</h2>
-                  <p className="text-md text-gray-600">Ticket Type: <span className="font-medium">{ticketType.type}</span></p>
+                  
                 </div>
                 <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                   isExpired ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
@@ -154,18 +154,18 @@ const PendingTradesPage = () => {
                 </div>
                 <div className="flex items-center">
                   <FaTicketAlt className="mr-2 text-blue-500" />
-                  <span>Price: <span className="font-semibold">${ticketType.price.toLocaleString()}</span></span>
+                  <span className="font-semibold">{ticketType.type}: ${ticketType.price.toLocaleString()}</span>
                 </div>
                 {!isExpired && (
                   <div className="flex items-center text-sm text-red-600">
                     <FaUserClock className="mr-2" />
-                    <span>Confirm by: {format(tradeDeadline, 'MMM dd, yyyy HH:mm')}</span>
+                    <span>Thời hạn: {format(tradeDeadline, 'MMM dd, yyyy HH:mm')}</span>
                   </div>
                 )}
               </div>
               
               <p className="text-sm text-gray-500 mb-6">
-                This ticket was offered to you. You need to accept and complete the payment to receive it.
+              Vé này đã được gửi cho bạn. Bạn cần chấp nhận và hoàn tất thanh toán để nhận vé.
               </p>
 
               {!isExpired && (

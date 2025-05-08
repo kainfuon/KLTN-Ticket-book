@@ -55,6 +55,46 @@ const loginUser = async (req, res) => {
     }
 };
 
+// Change Password
+const changePassword = async (req, res) => {
+    try {
+        const userId = req.user.userId; // Đảm bảo middleware verifyToken đã gán req.user
+        const { currentPassword, newPassword } = req.body;
+
+        // Kiểm tra trường nhập
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: "Missing current or new password." });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ success: false, message: "New password must be at least 8 characters long." });
+        }
+
+        // Tìm user
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Kiểm tra mật khẩu hiện tại
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: "Current password is incorrect." });
+        }
+
+        // Hash và cập nhật mật khẩu mới
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ success: true, message: "Password updated successfully." });
+    } catch (error) {
+        console.error("Change password error:", error);
+        res.status(500).json({ success: false, message: "Server error while changing password." });
+    }
+};
+
+
  const getUserInfo = async (req, res) => {
     try {
         const userId = req.user?.userId; // Lấy userId từ token trong middleware
@@ -91,4 +131,4 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getUserInfo, getAllUsers };
+export { registerUser, loginUser, getUserInfo, getAllUsers, changePassword };
