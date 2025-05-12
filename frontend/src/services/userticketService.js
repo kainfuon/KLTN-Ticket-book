@@ -122,8 +122,6 @@ export const confirmTrade = async (ticketId) => {
   }
 };
 
-
-
 export const generateTicketQR = async (ticketId) => {
   try {
     const response = await axios.get(`${API_URL}/${ticketId}/qr`, {
@@ -134,5 +132,28 @@ export const generateTicketQR = async (ticketId) => {
     return response.data;
   } catch (error) {
     throw error.response?.data || { success: false, message: 'Failed to generate QR code' };
+  }
+};
+
+export const getAdminSuccessfulTrades = async () => {
+  const token = localStorage.getItem('token'); // Consider using an Auth Context/Hook for token management
+  try {
+    // Make the GET request using axios
+    const response = await axios.get(`${API_URL}/all-trades`, { // Ensure this endpoint is correct
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    // Check if the response is successful
+    if (response.data && response.data.success) {
+      return response.data.data || []; // Return the array of trades or an empty array
+    } else {
+      // Handle cases where the backend API returns success: false
+      throw new Error(response.data.message || "Failed to fetch successful trades (API returned success: false).");
+    }
+  } catch (error) {
+    console.error("Error fetching successful trades in service:", error);
+    throw error;
+    
   }
 };

@@ -19,8 +19,13 @@ const placeOrder = async (req, res) => {
         }
 
         const userId = req.user?.userId;
+        
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized. User ID is missing." });
+        }
+
+        if (user?.isBlocked) {
+          return res.status(403).json({ success: false, message: "User is blocked from buying tickets." });
         }
 
         const event = await eventModel.findById(eventId);

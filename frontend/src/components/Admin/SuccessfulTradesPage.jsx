@@ -1,34 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FaExchangeAlt, FaUser, FaCalendarAlt, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { FaExchangeAlt, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
 import { toast } from 'sonner';
-
-// Mock service function - replace with your actual API call
-const getAdminSuccessfulTrades = async () => {
-  const token = localStorage.getItem('token'); // Assuming admin token is stored
-  if (!token) {
-    throw new Error("Admin authentication token not found. Please login.");
-  }
-
-  // Replace with your actual API endpoint: userTicketRouter.get("/all-trades", verifyAdmin, getSuccessfulTrades);
-  const response = await fetch('http://localhost:4001/api/userTicket/all-trades', { 
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-  }
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.message || "Failed to fetch successful trades.");
-  }
-  return data.data; 
-};
-
-
+import { getAdminSuccessfulTrades} from '../../services/userticketService'; 
 const SuccessfulTradesPage = () => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +14,15 @@ const SuccessfulTradesPage = () => {
     try {
       setLoading(true);
       setError('');
+      // Call the imported service function
       const tradesData = await getAdminSuccessfulTrades();
-      setTrades(tradesData || []);
+      setTrades(tradesData); // Service returns the data array directly
     } catch (err) {
-      console.error("Error fetching successful trades:", err);
-      setError(err.message || 'Failed to load successful trades.');
-      toast.error(err.message || 'Failed to load successful trades.');
+      // Catch errors thrown by the service
+      console.error("Error fetching successful trades in component:", err);
+      const errorMessage = err.message || 'Failed to load successful trades.';
+      setError(errorMessage);
+      toast.error(errorMessage); // Show error toast
     } finally {
       setLoading(false);
     }
@@ -53,16 +30,20 @@ const SuccessfulTradesPage = () => {
 
   useEffect(() => {
     fetchTrades();
-  }, []);
+  }, []); // Fetch trades on component mount
 
   // Pagination calculations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentTrades = trades.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(trades.length / itemsPerPage);
+  const paginate = (pageNumber) => {
+    // Ensure page number stays within bounds
+    const newPage = Math.max(1, Math.min(pageNumber, totalPages));
+    setCurrentPage(newPage);
+  };
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
+  // --- Render Logic ---
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px] p-6">
@@ -74,12 +55,12 @@ const SuccessfulTradesPage = () => {
 
   if (error) {
     return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-center">
+      <div className="m-6 p-6 bg-red-50 border border-red-200 rounded-lg text-center">
         <FaExclamationTriangle className="text-red-500 text-4xl mx-auto mb-3" />
         <h3 className="text-xl font-semibold text-red-700 mb-2">Error Loading Trades</h3>
         <p className="text-red-600">{error}</p>
-        <button 
-          onClick={fetchTrades}
+        <button
+          onClick={fetchTrades} // Allow retrying
           className="mt-4 px-4 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200 transition-colors"
         >
           Try Again
@@ -91,14 +72,14 @@ const SuccessfulTradesPage = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <h1 className="text-3xl font-bold text-gray-800">Successful Ticket Trades</h1>
-          <div className="text-lg text-gray-600">
+          <div className="text-lg text-gray-600 bg-white px-4 py-2 rounded-lg shadow-sm">
             Total Trades: <span className="font-semibold text-blue-600">{trades.length}</span>
           </div>
         </div>
 
-        {currentTrades.length === 0 ? (
+        {trades.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <FaExchangeAlt className="mx-auto text-5xl text-gray-400 mb-4" />
             <h3 className="text-xl font-medium text-gray-900">No Successful Trades Found</h3>
@@ -126,20 +107,20 @@ const SuccessfulTradesPage = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentTrades.map((tradeTicket) => (
-                    // Each tradeTicket represents a userTicket document that has been traded
-                    // The tradeHistory array will contain the actual trade events.
-                    // We'll display the latest trade from the history.
-                    tradeTicket.tradeHistory.slice(-1).map(trade => ( // Get the last trade in history
+                    // Assuming tradeHistory contains the relevant trade info
+                    // Displaying the last trade event for this ticket
+                    tradeTicket.tradeHistory?.slice(-1).map(trade => (
                       <tr key={`${tradeTicket._id}-${trade._id}`} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono" title={tradeTicket._id}>
                           {tradeTicket._id.substring(0, 8)}...
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{trade.fromUserId?.name || 'N/A'}</div>
+                          {/* Ensure your backend populates these fields or adjust accordingly */}
+                          <div className="text-sm font-medium text-gray-900">{trade.fromUserId?.name || trade.fromUserId?.fullName || 'N/A'}</div>
                           <div className="text-xs text-gray-500">{trade.fromUserId?.email || 'N/A'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{trade.toUserId?.name || 'N/A'}</div>
+                          <div className="text-sm font-medium text-gray-900">{trade.toUserId?.name || trade.toUserId?.fullName || 'N/A'}</div>
                           <div className="text-xs text-gray-500">{trade.toUserId?.email || 'N/A'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -151,23 +132,25 @@ const SuccessfulTradesPage = () => {
                 </tbody>
               </table>
             </div>
+            {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
+              <div className="px-6 py-4 border-t bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-sm text-gray-600">
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage} of {totalPages} (Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, trades.length)} of {trades.length} trades)
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
+                  {/* Optional: Page number buttons */}
                   <button
                     onClick={() => paginate(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>

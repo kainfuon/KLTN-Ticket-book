@@ -131,4 +131,21 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getUserInfo, getAllUsers, changePassword };
+const blockUser = async (req, res) => {
+  try {
+    const { userId, block } = req.body; // block = true hoặc false
+
+    const user = await userModel.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.isBlocked = block;
+    await user.save();
+
+    res.json({ success: true, message: `User has been ${block ? "blocked" : "unblocked"}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+
+export { registerUser, loginUser, getUserInfo, getAllUsers, changePassword, blockUser };

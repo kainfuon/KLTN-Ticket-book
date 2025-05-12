@@ -46,3 +46,28 @@ export const getUserProfile = async () => {
     throw error; // Re-throw to be caught by the component
   }
 };
+
+export const updateUserBlockStatus = async (userId, block) => {
+  try {
+    const token = getToken();
+    if (!token) throw new Error("Admin token not found.");
+
+    const response = await axios.patch(`${API_URL}/block`, // Matches backend/routers/userRoutes.js
+      { userId, block }, // Request body
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    
+    if (response.data && response.data.success) {
+      return response.data; // Return { success: true, message: '...' }
+    } else {
+      throw new Error(response.data?.message || 'Failed to update user block status.');
+    }
+  } catch (error) {
+    console.error("Error updating user block status:", error);
+    throw error.response?.data || error;
+  }
+};
