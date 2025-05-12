@@ -294,8 +294,8 @@ export const getSuccessfulTrades = async (req, res) => {
       tradeHistory: { $exists: true, $ne: [] }
     })
     .select("ownerId tradeHistory")
-    .populate("tradeHistory.fromUserId", "fullName email")
-    .populate("tradeHistory.toUserId", "fullName email");
+    .populate("tradeHistory.fromUserId", "name email")
+    .populate("tradeHistory.toUserId", "name email");
 
     res.json({
       success: true,

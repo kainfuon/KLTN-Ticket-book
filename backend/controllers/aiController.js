@@ -3,7 +3,7 @@ import userTicketModel from "../models/userTicketModel.js";
 import userModel from "../models/userModel.js";
 
 // Hàm gọi script AI để đánh giá 1 user
-const predictScalperFromStats = (totalTickets, tradesCount) => {
+const predictScalperFromStats = (totalTickets, tradesCount, reputationScore) => {
     return new Promise((resolve) => {
         const py = spawn("python", [
             "ai/detect_scalper.py",
@@ -31,11 +31,16 @@ const predictScalperFromStats = (totalTickets, tradesCount) => {
 
 export const getSuspectedScalpers = async (req, res) => {
     try {
-        const users = await userTicketModel.distinct("ownerId");
+        const userIds = await userTicketModel.distinct("ownerId");
 
         const result = [];
 
-        const promises = users.map(async (userId) => {
+        const promises = userIds.map(async (userId) => {
+            const userInfo = await userModel.findById(userId);
+
+            // Bỏ qua user đã bị xóa khỏi hệ thống
+            if (!userInfo) return null;
+
             const [totalTicketsOrdered, tradesCount] = await Promise.all([
                 userTicketModel.aggregate([
                     { $match: { ownerId: userId } },
@@ -47,11 +52,10 @@ export const getSuspectedScalpers = async (req, res) => {
                     },
                 ]),
                 getTradeCount(userId),
-                getUserReputationScore(userId), 
             ]);
 
             const ticketCount = totalTicketsOrdered[0]?.total || 0;
-            const reputationScore = userInfo?.reputationScore || 0; 
+            const reputationScore = userInfo.reputationScore || 0;
 
             const isScalper = await predictScalperFromStats(ticketCount, tradesCount, reputationScore);
 
@@ -64,7 +68,10 @@ export const getSuspectedScalpers = async (req, res) => {
             };
         });
 
-        result.push(...await Promise.all(promises));
+        const scalperResults = await Promise.all(promises);
+
+        // Lọc bỏ các kết quả null (user đã bị xóa)
+        result.push(...scalperResults.filter(r => r !== null));
 
         res.json({
             success: true,
@@ -75,6 +82,7 @@ export const getSuspectedScalpers = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
 
 
 // Cập nhật để đếm số vé trade từ tradeHistory
