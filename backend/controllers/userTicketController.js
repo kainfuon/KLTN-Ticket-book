@@ -220,7 +220,24 @@ const acceptTrade = async (req, res) => {
       return res.status(404).json({ success: false, message: "Ticket not available for confirmation." });
     }
 
-    // Chuyển quyền sở hữu
+    const fromUserId = ticket.ownerId;
+    const toUserId = userId;
+
+    // 1. Xác định xem vé đã từng được nhận qua trade chưa
+    const isReceivedTicket = ticket.isTraded;
+
+    // 2. Cập nhật điểm uy tín
+    await userModel.findByIdAndUpdate(
+      fromUserId,
+      { $inc: { reputationScore: isReceivedTicket ? -2 : -1 } }
+    );
+
+    await userModel.findByIdAndUpdate(
+      toUserId,
+      { $inc: { reputationScore: 1 } }
+    );
+
+    // 3.  Chuyển quyền sở hữu
     ticket.ownerId = userId;
     ticket.isPendingTrade = false;
     ticket.pendingRecipient = null;

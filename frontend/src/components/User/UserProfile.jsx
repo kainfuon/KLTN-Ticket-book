@@ -39,8 +39,6 @@ const InfoItem = ({ icon, label, value }) => (
   </div>
 );
 
-
-
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +137,7 @@ const UserProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InfoItem icon={<FaUser />} label="Full Name" value={user.name} />
             <InfoItem icon={<FaEnvelope />} label="Email Address" value={user.email} />
-            <InfoItem icon={<FaShieldAlt />} label="Role" value={user.role.charAt(0).toUpperCase() + user.role.slice(1)} />
+            {/* <InfoItem icon={<FaShieldAlt />} label="Role" value={user.role.charAt(0).toUpperCase() + user.role.slice(1)} /> */}
             <InfoItem 
               icon={<FaCalendarAlt />} 
               label="Joined On" 
@@ -151,7 +149,7 @@ const UserProfile = () => {
               value={user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'} 
             />
           </div>
-        </div>
+        </div> 
 
         <div className="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-center gap-4">
           <button 

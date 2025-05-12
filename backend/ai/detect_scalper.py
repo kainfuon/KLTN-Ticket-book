@@ -9,9 +9,9 @@ MODEL_PATH = r"C:\github\KLTN-Ticket-book-1\backend\ai\data\trained_model.pkl"
 DATA_PATH = r"C:\github\KLTN-Ticket-book-1\backend\ai\data\train_data.csv"
 
 def train_model():
-    data = pd.read_csv(DATA_PATH)  # file gồm: num_tickets, trades, is_scalper
-    X = data[["num_tickets", "trades"]]  # Cột features chính xác
-    y = data["is_scalper"]  # Cột labels chính xác
+    data = pd.read_csv(DATA_PATH)
+    X = data[["num_tickets", "trades", "reputation"]]  # Thêm 'reputation'
+    y = data["is_scalper"]
 
     model = LogisticRegression()
     model.fit(X, y)
@@ -21,25 +21,33 @@ def train_model():
 
     print("Model trained and saved.")
 
-def predict_scalper(num_tickets, trades):
+def predict_scalper(num_tickets, trades, reputation):
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
 
-    # Sử dụng cột tên chính xác "num_tickets" và "trades"
-    features = pd.DataFrame([[int(num_tickets), int(trades)]], columns=["num_tickets", "trades"])
+    features = pd.DataFrame(
+        [[int(num_tickets), int(trades), int(reputation)]],
+        columns=["num_tickets", "trades", "reputation"]
+    )
     prediction = model.predict(features)
     return prediction[0]
 
 if __name__ == "__main__":
-    if sys.argv[1] == "train":
+    if len(sys.argv) < 2:
+        print("Usage: python detect_scalper.py <train|predict> [args]")
+    elif sys.argv[1] == "train":
         train_model()
     elif sys.argv[1] == "predict":
-        if len(sys.argv) < 4:
-            print("Usage: python detect_scalper.py predict <num_tickets> <trades>")
+        if len(sys.argv) < 5:
+            print("Usage: python detect_scalper.py predict <num_tickets> <trades> <reputationScore>")
         else:
             num_tickets = sys.argv[2]
             trades = sys.argv[3]
-            result = predict_scalper(num_tickets, trades)
-            print(result)  # In ra kết quả 0 hoặc 1 cho backend đọc
+            reputation_score = sys.argv[4]
+            result = predict_scalper(num_tickets, trades, reputation_score)
+            print(result)
 
 # .\venv\Scripts\Activate
+# python detect_scalper.py train
+# python detect_scalper.py predict 3 2 1.0
+

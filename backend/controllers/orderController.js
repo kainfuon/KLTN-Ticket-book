@@ -2,6 +2,7 @@ import orderModel from "../models/orderModel.js";
 import ticketModel from "../models/ticketModel.js";
 import eventModel from "../models/eventModel.js";
 import userTicketModel from "../models/userTicketModel.js";
+import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
 dotenv.config(); // 🔥 Load biến môi trường từ .env
 
@@ -167,6 +168,13 @@ const confirmPayment = async (req, res) => {
 
       const newUserTickets = await userTicketModel.insertMany(userTicketsToCreate);
       createdUserTickets.push(...newUserTickets.map(ticket => ticket._id));
+
+      // ⭐️ Cập nhật điểm uy tín: +2 điểm cho mỗi vé được mua
+      await userModel.findByIdAndUpdate(
+        order.userId,
+        { $inc: { reputationScore: createdUserTickets.length * 2 } }
+      );
+
     }
 
     const finalOrder = await orderModel.findOneAndUpdate(

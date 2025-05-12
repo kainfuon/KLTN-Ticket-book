@@ -9,6 +9,7 @@ const predictScalperFromStats = (totalTickets, tradesCount) => {
             "predict",
             totalTickets,
             tradesCount,
+            reputationScore, 
         ]);
 
         let result = "";
@@ -45,16 +46,19 @@ export const getSuspectedScalpers = async (req, res) => {
                     },
                 ]),
                 getTradeCount(userId),
+                getUserReputationScore(userId), 
             ]);
 
             const ticketCount = totalTicketsOrdered[0]?.total || 0;
+            const reputationScore = userInfo?.reputationScore || 0; 
 
-            const isScalper = await predictScalperFromStats(ticketCount, tradesCount);
+            const isScalper = await predictScalperFromStats(ticketCount, tradesCount, reputationScore);
 
             return {
                 userId,
                 totalTickets: ticketCount,
                 trades: tradesCount,
+                reputationScore,
                 isScalper,
             };
         });
@@ -78,4 +82,10 @@ const getTradeCount = async (userId) => {
         "tradeHistory.fromUserId": userId,
     });
     return tradeCount;
+};
+
+// Hàm lấy điểm người dùng từ userModel
+const getUserReputationScore = async (userId) => {
+    const user = await userModel.findById(userId);
+    return user ? user.reputationScore : 0;  // Trả về điểm người dùng, nếu không có thì mặc định là 0
 };
