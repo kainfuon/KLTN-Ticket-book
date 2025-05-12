@@ -1,21 +1,21 @@
 num_tickets,trades,reputationScore,is_scalper
-3,0,6,0         # Người mua vé, không trade → điểm cao → không phải phe vé
-5,1,8,0         # Người mua nhiều, chỉ trade 1 → vẫn tin tưởng được
-7,3,4,0         # Có trade nhưng chủ yếu là người mua → điểm vẫn ổn
-4,2,2,1         # Trade hơi nhiều, điểm thấp → nghi ngờ
-2,3,-2,1        # Mua ít, trade nhiều → phe vé
-1,4,-4,1        # Giao dịch chủ yếu là trade → điểm âm → phe vé
-0,5,-5,1        # Không mua, chỉ trade → chắc chắn là phe vé
-6,0,12,0        # Mua nhiều, không trade → điểm rất cao → chắc chắn không phải phe vé
-3,2,1,1         # Hơi trade, hơi mua → điểm thấp → nghi ngờ
-2,0,4,0         # Mua ít, không trade → ổn
-1,1,1,0         # Nhận 1 vé, không gửi tiếp → không đáng ngờ
-1,1,-1,1        # Nhận 1 vé rồi gửi tiếp → điểm âm → khả năng trung gian
-0,2,-3,1        # Không mua, nhận và gửi → rất khả nghi
-5,1,9,0         # Chủ yếu mua, 1 lần trade → không vấn đề
-4,0,8,0         # Mua vé, không trade → uy tín
-3,3,0,1         # Mua-trade ngang nhau → điểm trung bình → đáng ngờ
-0,3,-4,1        # Giao dịch không rõ nguồn vé → phe vé
-6,1,10,0        # Mua nhiều, 1 lần gửi → vẫn uy tín
-2,2,0,1         # Giao dịch vừa đủ gây nghi ngờ
-4,4,-2,1        # Trade nhiều hơn mua → điểm xuống thấp → phe vé
+3,0,6,0
+5,1,8,0
+7,3,4,0
+4,2,2,0      # nghi ngờ nhẹ → vẫn gán 0
+2,3,-2,1     # điểm thấp → phe vé
+1,4,-4,1
+0,5,-5,1
+6,0,12,0
+3,2,1,0      # nghi ngờ nhẹ → gán 0 để mô hình tự học
+2,0,4,0
+1,1,1,0
+1,1,-1,0     # ngưỡng dưới cùng → vẫn chưa chắc là phe vé
+0,2,-3,1
+5,1,9,0
+4,0,8,0
+3,3,0,0      # điểm trung tính → không gán sai
+0,3,-4,1
+6,1,10,0
+2,2,0,0
+4,4,-2,1

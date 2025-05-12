@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import userTicketModel from "../models/userTicketModel.js";
+import userModel from "../models/userModel.js";
 
 // Hàm gọi script AI để đánh giá 1 user
 const predictScalperFromStats = (totalTickets, tradesCount) => {

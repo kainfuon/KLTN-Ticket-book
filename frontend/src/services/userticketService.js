@@ -122,6 +122,8 @@ export const confirmTrade = async (ticketId) => {
   }
 };
 
+
+
 export const generateTicketQR = async (ticketId) => {
   try {
     const response = await axios.get(`${API_URL}/${ticketId}/qr`, {

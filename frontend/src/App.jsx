@@ -21,7 +21,7 @@ import AdminRoute from "./routes/AdminRoute";
 import ScalpersList from "./components/Admin/ScalpersList";
 import PendingTradesPage from "./pages/User/PendingTradesPage";
 import TradeConfirmationPage from "./pages/User/TradeConfirmationPage";
-
+import SuccessfulTradesPage from "./components/Admin/SuccessfulTradesPage";
 // Layout wrapper component to handle footer display
 const AppLayout = ({ children }) => {
   const location = useLocation();
@@ -81,6 +81,7 @@ const App = () => {
               <Route path="events/:id" element={<EventDetail />} />
               <Route path="statistics" element={<Statistics />} />
               <Route path="scalpers" element={<ScalpersList />} />
+              <Route path="trades" element={<SuccessfulTradesPage />} /> {/* New Route */}
             </Route>
           </Route>
         </Routes>

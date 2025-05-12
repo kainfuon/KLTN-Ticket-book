@@ -114,12 +114,6 @@ const tradeTicket = async (req, res) => {
     ticket.pendingRecipient = recipient._id;
     ticket.pendingTradeCreatedAt = new Date();
 
-    ticket.tradeHistory.push({
-      fromUserId: req.user.userId,
-      toUserId: recipient._id,
-      tradeDate: new Date(),
-    });
-
     await ticket.save();
 
     res.json({
@@ -244,6 +238,12 @@ const acceptTrade = async (req, res) => {
     ticket.pendingTradeCreatedAt = null;
     ticket.isTraded = true;
 
+    ticket.tradeHistory.push({
+      fromUserId: req.user.userId,
+      toUserId: toUserId, 
+      tradeDate: new Date(),
+    });
+
     await ticket.save();
 
     res.json({ success: true, message: "Ticket trade confirmed successfully." });
@@ -284,6 +284,26 @@ const cancelTrade = async (req, res) => {
   } catch (error) {
     console.error("Cancel trade error:", error);
     res.status(500).json({ success: false, message: "Failed to cancel trade." });
+  }
+};
+
+export const getSuccessfulTrades = async (req, res) => {
+  try {
+    const successfulTrades = await userTicketModel.find({
+      isPendingTrade: false,
+      tradeHistory: { $exists: true, $ne: [] }
+    })
+    .select("ownerId tradeHistory")
+    .populate("tradeHistory.fromUserId", "fullName email")
+    .populate("tradeHistory.toUserId", "fullName email");
+
+    res.json({
+      success: true,
+      data: successfulTrades
+    });
+  } catch (error) {
+    console.error("Error fetching successful trades:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

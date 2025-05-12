@@ -152,12 +152,12 @@ const UserProfile = () => {
         </div> 
 
         <div className="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-center gap-4">
-          <button 
+          {/* <button 
             className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
             // onClick={() => toast.info("Edit Profile feature coming soon!")} // Placeholder for edit profile
           >
             <FaUser className="text-gray-600"/> Edit Profile (Soon)
-          </button>
+          </button> */}
           <button 
             onClick={() => setIsChangePasswordModalOpen(true)}
             className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 transform hover:-translate-y-0.5"

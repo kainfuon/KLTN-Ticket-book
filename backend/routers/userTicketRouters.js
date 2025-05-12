@@ -1,10 +1,11 @@
 import express from "express";
-import {getUserTickets, getTicketDetails, generateTicketQR, tradeTicket, getPendingTrades, acceptTrade, confirmTrade, cancelTrade} from "../controllers/userTicketController.js";
-import { verifyToken } from "../middleware/auth.js";
+import {getUserTickets, getTicketDetails, generateTicketQR, tradeTicket, getPendingTrades, acceptTrade, confirmTrade, cancelTrade, getSuccessfulTrades} from "../controllers/userTicketController.js";
+import { verifyToken , verifyAdmin} from "../middleware/auth.js";
 
 const userTicketRouter = express.Router()
 
 
+userTicketRouter.get("/all-trades", verifyAdmin, getSuccessfulTrades);
 userTicketRouter.get("/my-tickets", verifyToken, getUserTickets);
 userTicketRouter.get("/pending-trades", verifyToken, getPendingTrades);
 userTicketRouter.post("/confirm-trade", verifyToken, confirmTrade);

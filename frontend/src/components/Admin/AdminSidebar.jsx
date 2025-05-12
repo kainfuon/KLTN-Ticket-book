@@ -38,7 +38,7 @@ const AdminSidebar = () => {
           <span className="hidden md:inline">Customers Scalpers</span>
         </Link>
 
-        <Link to="/admin/orders" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+        <Link to="/admin/trades" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
           <span className="w-8 h-8 flex items-center justify-center">
             <FaBox className="text-gray-900 text-2xl" />
           </span>

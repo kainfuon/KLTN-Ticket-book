@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-const MONGO_URL = 'mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.5'
+const MONGO_URL = 'mongodb+srv://kainfuon:Test12345678@cluster0.ayrph.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+
 
 export const connectDB = async () => {
     // Nếu đang chạy test thì bỏ qua connect thật
