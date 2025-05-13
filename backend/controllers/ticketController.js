@@ -38,30 +38,73 @@ const addTicket = async (req, res) => {
     }
 };
 
-// Update ticket (price, totalSeats)
 const updateTicket = async (req, res) => {
     try {
         const { ticketId } = req.params;
-        const { price, totalSeats } = req.body;
-        console.log("🎯 Received ticketId:", req.params.ticketId);
+        const { type, price, totalSeats, availableSeats } = req.body;
 
-        // Find and update ticket
-        const updatedTicket = await ticketModel.findByIdAndUpdate(
-            ticketId,
-            { price, totalSeats, availableSeats: totalSeats }, // Reset availableSeats if total changes
-            { new: true }
-        );
+        console.log("🎯 Received ticketId:", ticketId);
 
-        if (!updatedTicket) {
+        // Tìm ticket hiện tại
+        const ticket = await ticketModel.findById(ticketId);
+        if (!ticket) {
             return res.status(404).json({ success: false, message: "Ticket not found." });
         }
 
-        res.json({ success: true, message: "Ticket updated successfully!", data: updatedTicket });
+        // Nếu đã bán vé rồi thì chỉ cho phép cập nhật availableSeats
+        if (ticket.ticketsSold > 0) {
+            if (availableSeats === undefined) {
+                return res.status(400).json({
+                    success: false,
+                    message: "This ticket has been sold. You can only update availableSeats.",
+                });
+            }
+
+            // Kiểm tra availableSeats hợp lệ
+            const maxAvailable = ticket.totalSeats - ticket.ticketsSold;
+            if (availableSeats < 0 || availableSeats > maxAvailable) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Available seats must be between 0 and ${maxAvailable}`,
+                });
+            }
+
+            ticket.availableSeats = availableSeats;
+            await ticket.save();
+
+            return res.json({
+                success: true,
+                message: "Available seats updated successfully!",
+                data: ticket,
+            });
+        }
+
+        // Nếu chưa bán vé nào thì được phép cập nhật đầy đủ
+        const updates = {};
+        if (type) updates.type = type;
+        if (price !== undefined) updates.price = price;
+        if (totalSeats !== undefined) {
+            if (totalSeats < 0) {
+                return res.status(400).json({ success: false, message: "totalSeats must be non-negative." });
+            }
+            updates.totalSeats = totalSeats;
+            updates.availableSeats = totalSeats; // reset lại khi chưa bán vé nào
+        }
+
+        const updatedTicket = await ticketModel.findByIdAndUpdate(ticketId, updates, { new: true });
+
+        return res.json({
+            success: true,
+            message: "Ticket updated successfully!",
+            data: updatedTicket,
+        });
     } catch (error) {
-        console.error(error);
+        console.error("🔥 Error updating ticket:", error);
         res.status(500).json({ success: false, message: "Server error." });
     }
 };
+
+
 
 // Delete ticket
 const deleteTicket = async (req, res) => {
