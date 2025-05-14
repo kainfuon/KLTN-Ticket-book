@@ -51,7 +51,7 @@ const OrderModal = ({ isOpen, onClose, event, selectedTickets, tickets, total })
         window.location.href = response.sessionUrl;
       }
     } catch (err) {
-      setError('Failed to place order. Please try again.');
+  setError(err.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }

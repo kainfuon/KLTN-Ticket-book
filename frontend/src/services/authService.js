@@ -49,7 +49,7 @@ export const getUserProfile = async () => {
 
 export const updateUserBlockStatus = async (userId, block) => {
   try {
-    const token = getToken();
+    const token = localStorage.getItem('token');
     if (!token) throw new Error("Admin token not found.");
 
     const response = await axios.patch(`${API_URL}/block`, // Matches backend/routers/userRoutes.js

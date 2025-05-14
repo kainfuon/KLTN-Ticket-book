@@ -47,18 +47,18 @@ const UserNavbar = () => {
 
           {/* Navigation Links and Search */}
           <div className="flex items-center space-x-6">
-            <Link
+            {/* <Link
               to="/home"
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
             >
               Home
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               to="/contact"
               className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
             >
               Contact
-            </Link>
+            </Link> */}
 
             {/* Search Form */}
             {/* <form onSubmit={handleSearch} className="relative">

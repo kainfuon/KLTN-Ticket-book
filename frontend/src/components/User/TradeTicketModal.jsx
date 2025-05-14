@@ -17,6 +17,7 @@ const TradeTicketModal = ({ ticket, onClose, onTradeComplete }) => {
       // Validate inputs
       if (!recipientEmail || !password) {
         setError('Please fill in all fields');
+        setLoading(false); // Stop loading
         return;
       }
 

@@ -19,14 +19,21 @@ const placeOrder = async (req, res) => {
         }
 
         const userId = req.user?.userId;
-        
+
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized. User ID is missing." });
         }
 
-        if (user?.isBlocked) {
-          return res.status(403).json({ success: false, message: "User is blocked from buying tickets." });
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
         }
+
+        if (user.isBlocked) {
+            return res.status(403).json({ success: false, message: "User is blocked from buying tickets." });
+        }
+
+
 
         const event = await eventModel.findById(eventId);
         if (!event) {
@@ -176,9 +183,10 @@ const confirmPayment = async (req, res) => {
 
       // ⭐️ Cập nhật điểm uy tín: +2 điểm cho mỗi vé được mua
       await userModel.findByIdAndUpdate(
-        order.userId,
-        { $inc: { reputationScore: createdUserTickets.length * 2 } }
-      );
+      order.userId,
+      { $inc: { reputationScore: 2 * ticketItem.quantity } }  // +2 cho mỗi vé
+    );
+
 
     }
 

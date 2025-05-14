@@ -1,6 +1,7 @@
 import { spawn } from "child_process";
 import userTicketModel from "../models/userTicketModel.js";
 import userModel from "../models/userModel.js";
+import mongoose from "mongoose";
 
 // Hàm gọi script AI để đánh giá 1 user
 const predictScalperFromStats = (totalTickets, tradesCount, reputationScore) => {
@@ -87,11 +88,26 @@ export const getSuspectedScalpers = async (req, res) => {
 
 // Cập nhật để đếm số vé trade từ tradeHistory
 const getTradeCount = async (userId) => {
-    const tradeCount = await userTicketModel.countDocuments({
-        "tradeHistory.fromUserId": userId,
-    });
-    return tradeCount;
+  const objectId = new mongoose.Types.ObjectId(userId);
+
+  const result = await userTicketModel.aggregate([
+    {
+      $match: {
+        "tradeHistory.fromUserId": objectId
+      }
+    },
+    { $unwind: "$tradeHistory" },
+    {
+      $match: {
+        "tradeHistory.fromUserId": objectId
+      }
+    },
+    { $count: "total" }
+  ]);
+
+  return result[0]?.total || 0;
 };
+
 
 // Hàm lấy điểm người dùng từ userModel
 const getUserReputationScore = async (userId) => {

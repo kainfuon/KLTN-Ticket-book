@@ -217,14 +217,17 @@ const acceptTrade = async (req, res) => {
     const fromUserId = ticket.ownerId;
     const toUserId = userId;
 
-    // 1. Xác định xem vé đã từng được nhận qua trade chưa
-    const isReceivedTicket = ticket.isTraded;
+    // Kiểm tra nếu vé đã có lịch sử trade (đã được gửi và nhận ít nhất một lần)
+    const hasTradeHistory = ticket.tradeHistory.length > 0;
 
-    // 2. Cập nhật điểm uy tín
-    await userModel.findByIdAndUpdate(
-      fromUserId,
-      { $inc: { reputationScore: isReceivedTicket ? -2 : -1 } }
-    );
+    // 1. Cập nhật điểm uy tín
+    if (hasTradeHistory) {
+      // Nếu vé đã được trade trước đó, trừ 2 điểm cho người gửi lại
+      await userModel.findByIdAndUpdate(fromUserId, { $inc: { reputationScore: -2 } });
+    } else {
+      // Nếu vé chưa được trade trước đó, trừ 1 điểm cho người gửi
+      await userModel.findByIdAndUpdate(fromUserId, { $inc: { reputationScore: -1 } });
+    }
 
     await userModel.findByIdAndUpdate(
       toUserId,
@@ -239,10 +242,10 @@ const acceptTrade = async (req, res) => {
     ticket.isTraded = true;
 
     ticket.tradeHistory.push({
-      fromUserId: req.user.userId,
-      toUserId: toUserId, 
+      fromUserId: fromUserId,  // chính xác: người gửi ban đầu
+      toUserId: toUserId,      // người nhận xác nhận
       tradeDate: new Date(),
-    });
+  });
 
     await ticket.save();
 

@@ -13,12 +13,18 @@ export const placeOrder = async (orderData) => {
     });
     return response.data;
   } catch (error) {
-    if (error.response?.data?.includes('Stripe')) {
+    const errorMessage = error.response?.data?.message;
+
+    // Nếu thông báo có liên quan đến Stripe
+    if (typeof errorMessage === 'string' && errorMessage.includes('Stripe')) {
       throw new Error('Payment service is temporarily unavailable');
     }
-    throw error.response?.data || { success: false, message: "Failed to place order" };
+
+    // Ném lỗi chi tiết nếu có message, hoặc mặc định
+    throw new Error(errorMessage || 'Failed to place order');
   }
 };
+
 
 export const confirmPayment = async (success, orderId) => {
   try {
