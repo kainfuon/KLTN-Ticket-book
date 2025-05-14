@@ -42,3 +42,34 @@ export const checkPendingTrades = async () => {
       console.error('Error checking pending trades:', error);
   }
 };
+
+import orderModel from "../models/orderModel.js"; // đường dẫn đến orderModel
+
+export const cancelExpiredOrders = async () => {
+  try {
+    const now = new Date();
+    const expiryTime = new Date(now.getTime() - 24 * 60 * 60 * 1000); // trừ 24h
+
+    // Tìm các đơn pending quá hạn
+    const expiredOrders = await orderModel.find({
+      status: "pending",
+      createdAt: { $lt: expiryTime }
+    });
+
+    if (expiredOrders.length > 0) {
+      const ids = expiredOrders.map(order => order._id);
+
+      await orderModel.updateMany(
+        { _id: { $in: ids } },
+        { $set: { status: "cancelled" } }
+      );
+
+      console.log(`✅ Đã hủy ${expiredOrders.length} đơn hàng quá hạn.`);
+    } else {
+      console.log("✅ Không có đơn hàng nào quá hạn.");
+    }
+  } catch (err) {
+    console.error("❌ Lỗi khi hủy đơn hàng quá hạn:", err);
+  }
+};
+

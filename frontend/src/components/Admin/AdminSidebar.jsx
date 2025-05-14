@@ -10,12 +10,12 @@ const AdminSidebar = () => {
     <div className="bg-gray-100 text-gray-900 h-screen px-4 fixed w-16 md:w-64 border-r border-gray-300">
       <h1 className="text-2xl font-bold hidden md:block mt-4 text-center italic">Ticket Book</h1>
       <ul className="flex flex-col mt-5 text-xl">
-        <Link to="/admin/dashboard" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+        {/* <Link to="/admin/dashboard" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
           <span className="w-8 h-8 flex items-center justify-center">
             <FaTachometerAlt className="text-gray-900 text-2xl" />
           </span>
           <span className="hidden md:inline">Dashboard</span>
-        </Link>
+        </Link> */}
 
         <Link to="/admin/events" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
           <span className="w-8 h-8 flex items-center justify-center">
@@ -31,6 +31,13 @@ const AdminSidebar = () => {
           <span className="hidden md:inline">Statistics</span>
         </Link>
 
+        <Link to="/admin/trades" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
+          <span className="w-8 h-8 flex items-center justify-center">
+            <FaBox className="text-gray-900 text-2xl" />
+          </span>
+          <span className="hidden md:inline">Trades</span>
+        </Link>
+
         <Link to="/admin/scalpers" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
           <span className="w-8 h-8 flex items-center justify-center">
             <FaUsers className="text-gray-900 text-2xl" />
@@ -38,12 +45,7 @@ const AdminSidebar = () => {
           <span className="hidden md:inline">Customers Scalpers</span>
         </Link>
 
-        <Link to="/admin/trades" className="flex items-center md:justify-start justify-center py-3 px-2 md:space-x-4 hover:bg-gray-300 hover:rounded hover:cursor-pointer">
-          <span className="w-8 h-8 flex items-center justify-center">
-            <FaBox className="text-gray-900 text-2xl" />
-          </span>
-          <span className="hidden md:inline">Orders</span>
-        </Link>
+        
 
         <button
           onClick={() => {

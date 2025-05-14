@@ -84,47 +84,61 @@ const EventSales = ({ eventStats }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                {currentItems?.map((event) => {
-                  const soldPercentage = (event.ticketsSold / event.ticketsTotal) * 100;
-                  return (
-                    <tr key={event.eventId} className="border-b border-gray-100">
-                      <td className="py-4 px-4 text-sm text-gray-900">
-                        {event.eventTitle}
-                      </td>
-                      <td className="py-4 px-4 text-sm text-gray-500">
-                        {format(new Date(event.saleStartDate), 'MMM dd, yyyy')}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-4">
-                          {/* Progress bar container */}
-                          <div className="flex-1">
-                            <div className="h-2 bg-gray-100 rounded-full">
-                              <div
-                                className="h-2 bg-green-500 rounded-full"
-                                style={{ width: `${soldPercentage}%` }}
-                              />
-                            </div>
-                          </div>
-                          {/* Tickets count */}
-                          <div className="text-sm text-gray-500 whitespace-nowrap">
-                            {event.ticketsSold} / {event.ticketsTotal}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
-                        ${event.totalRevenue.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {/* Empty rows to maintain height */}
-                {emptyRows > 0 && emptyRowsArray.map((_, index) => (
-                  <tr key={`empty-${index}`} className="border-b border-gray-100 h-[52px]">
-                    <td colSpan="4" className="px-4">&nbsp;</td>
-                  </tr>
-                ))}
-              </tbody>
+              
+
+
+<tbody>
+  {currentItems?.map((event) => {
+    // SỬA Ở ĐÂY: Kiểm tra ticketsTotal trước khi chia
+    const soldPercentage = event.ticketsTotal > 0 
+      ? (event.ticketsSold / event.ticketsTotal) * 100 
+      : 0; // Nếu ticketsTotal là 0, phần trăm bán được là 0
+
+    return (
+      <tr key={event.eventId} className="border-b border-gray-100">
+        <td className="py-4 px-4 text-sm text-gray-900">
+          {event.eventTitle}
+        </td>
+        <td className="py-4 px-4 text-sm text-gray-500">
+          {event.saleStartDate ? format(new Date(event.saleStartDate), 'MMM dd, yyyy') : 'N/A'}
+        </td>
+        <td className="py-4 px-4">
+          <div className="flex items-center gap-4">
+            {/* Progress bar container */}
+            <div className="flex-1"> {/* Giữ nguyên flex-1 */}
+              <div className="h-2 bg-gray-100 rounded-full"> {/* Nền xám cho phần chưa đạt */}
+                <div
+                  className="h-2 bg-green-500 rounded-full" // Màu xanh lá cây gốc
+                  style={{ width: `${soldPercentage}%` }}
+                />
+              </div>
+            </div>
+            {/* Tickets count */}
+            <div className="text-sm text-gray-500 whitespace-nowrap">
+              {event.ticketsSold} / {event.ticketsTotal}
+            </div>
+          </div>
+        </td>
+        <td className="py-4 px-4 text-sm text-gray-900">
+          {/* Giữ nguyên định dạng toFixed(2) nếu bạn muốn, hoặc dùng toLocaleString cho chuẩn hơn */}
+          ${event.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </td>
+      </tr>
+    );
+  })}
+  {/* Empty rows to maintain height */}
+  {emptyRows > 0 && emptyRowsArray.map((_, index) => (
+    <tr key={`empty-${index}`} className="border-b border-gray-100 h-[52px]"> {/* Giữ nguyên chiều cao hàng trống */}
+      <td colSpan="4" className="px-4">&nbsp;</td>
+    </tr>
+  ))}
+</tbody>
+
+
+
+
+
+
             </table>
           </div>
 
